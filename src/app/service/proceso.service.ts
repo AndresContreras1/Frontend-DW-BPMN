@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { EstadoProceso } from '../models/enums.model';
+import { ValidacionModeloResponse } from '../models/validacion-modelo.model';
 import { PageResponse } from '../models/pagina.model';
 import {
   EditarProcesoRequest,
@@ -59,6 +60,11 @@ export class ProcesoService {
 
   diagrama(id: number): Observable<ProcesoDiagramaResponse> {
     return this.http.get<ProcesoDiagramaResponse>(`${this.url}/${id}/diagrama`);
+  }
+
+  /** Todas las advertencias que impedirían publicar el proceso (no modifica nada). */
+  validacion(id: number): Observable<ValidacionModeloResponse> {
+    return this.http.get<ValidacionModeloResponse>(`${this.url}/${id}/validacion`);
   }
 
   historial(id: number): Observable<HistorialCambioResponse[]> {

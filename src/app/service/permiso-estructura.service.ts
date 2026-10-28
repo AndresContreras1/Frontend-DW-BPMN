@@ -14,6 +14,11 @@ export class PermisoEstructuraService {
     return this.http.get<PermisoEstructuraResponse[]>(this.url);
   }
 
+  /** Permisos de estructura del rol del usuario que inició sesión (cualquier rol autenticado). */
+  mio(): Observable<PermisoEstructuraResponse> {
+    return this.http.get<PermisoEstructuraResponse>(`${this.url}/mio`);
+  }
+
   actualizar(rol: RolAcceso, permisos: PermisoEstructuraRequest): Observable<PermisoEstructuraResponse> {
     return this.http.put<PermisoEstructuraResponse>(`${this.url}/${rol}`, permisos);
   }

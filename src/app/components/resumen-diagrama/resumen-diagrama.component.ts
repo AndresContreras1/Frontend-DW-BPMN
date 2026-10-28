@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { ProcesoDiagramaResponse } from '../../models/proceso.model';
+import { DatosDiagrama } from '../../utils/diagrama-layout';
 
 /** Resumen numérico del modelo (cuántos pools, lanes, actividades, etc. tiene el proceso). */
 @Component({
@@ -7,7 +7,7 @@ import { ProcesoDiagramaResponse } from '../../models/proceso.model';
   templateUrl: './resumen-diagrama.component.html'
 })
 export class ResumenDiagramaComponent {
-  readonly diagrama = input.required<ProcesoDiagramaResponse>();
+  readonly diagrama = input.required<DatosDiagrama>();
 
   readonly elementos = computed(() => {
     const d = this.diagrama();

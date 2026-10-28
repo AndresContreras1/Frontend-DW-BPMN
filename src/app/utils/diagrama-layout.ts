@@ -1,7 +1,11 @@
+import { LaneResponse } from '../models/lane.model';
 import { ProcesoDiagramaResponse } from '../models/proceso.model';
 
+/** Lane tal como la necesita el dibujo (la empresa invitada recibe una versión sin el id del rol). */
+export type LaneDatos = Pick<LaneResponse, 'id' | 'nombre' | 'orden' | 'poolId' | 'rolProcesoNombre'>;
+
 /** Datos del modelo necesarios para dibujar (sin el proceso). */
-export type DatosDiagrama = Omit<ProcesoDiagramaResponse, 'proceso'>;
+export type DatosDiagrama = Omit<ProcesoDiagramaResponse, 'proceso' | 'lanes'> & { lanes: LaneDatos[] };
 
 export const ANCHO_ACTIVIDAD = 120;
 export const ALTO_ACTIVIDAD = 60;

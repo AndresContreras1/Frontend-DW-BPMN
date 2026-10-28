@@ -5,6 +5,8 @@ export interface GatewayRequest {
   tipoGateway: TipoGateway;
   posicionX: number;
   posicionY: number;
+  /** Solo al editar: mueve el gateway a otra lane del mismo pool. */
+  laneId?: number;
 }
 
 export interface GatewayResponse {

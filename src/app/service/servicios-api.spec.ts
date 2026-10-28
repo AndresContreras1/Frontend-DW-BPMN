@@ -38,6 +38,7 @@ describe('Servicios de la API', () => {
   it('UsuarioService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(UsuarioService);
     probarPeticion(http, s.listar(), 'GET', api + '/usuarios', []);
+    probarPeticion(http, s.listar(false), 'GET', api + '/usuarios?activo=false', []);
     probarPeticion(http, s.obtener(3), 'GET', api + '/usuarios/3', {});
     probarPeticion(http, s.crear({ nombre: 'n', email: 'e', password: 'p', rolAcceso: 'EDITOR' }), 'POST', api + '/usuarios', {});
     probarPeticion(http, s.actualizar(3, { activo: false }), 'PATCH', api + '/usuarios/3', {});
@@ -49,6 +50,7 @@ describe('Servicios de la API', () => {
   it('PermisoEstructuraService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(PermisoEstructuraService);
     probarPeticion(http, s.listar(), 'GET', api + '/permisos-estructura', []);
+    probarPeticion(http, s.mio(), 'GET', api + '/permisos-estructura/mio', {});
     probarPeticion(http, s.actualizar('EDITOR', { crearPool: true, editarPool: true, eliminarPool: false, crearLane: true, editarLane: true, eliminarLane: false }), 'PUT', api + '/permisos-estructura/EDITOR', {});
   });
 
@@ -79,6 +81,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(1), 'DELETE', api + '/procesos/1', null);
     probarPeticion(http, s.diagrama(1), 'GET', api + '/procesos/1/diagrama', {});
     probarPeticion(http, s.historial(1), 'GET', api + '/procesos/1/historial', []);
+    probarPeticion(http, s.validacion(1), 'GET', api + '/procesos/1/validacion', { valido: true, advertencias: [] });
   });
 
   it('ProcesoCompartidoService_operaciones_usanLosEndpointsDelBackend', () => {
