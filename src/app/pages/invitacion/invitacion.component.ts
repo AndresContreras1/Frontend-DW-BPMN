@@ -25,7 +25,7 @@ export class InvitacionComponent {
 
   readonly enviando = signal(false);
   readonly error = signal('');
-  readonly erroresServidor = signal<Record<string, string>>({});
+  readonly erroresServidor = signal<Record<string, string | undefined>>({});
 
   aceptar(): void {
     if (this.form.invalid) {

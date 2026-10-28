@@ -32,7 +32,7 @@ export class RegistroComponent {
 
   readonly enviando = signal(false);
   readonly error = signal('');
-  readonly erroresServidor = signal<Record<string, string>>({});
+  readonly erroresServidor = signal<Record<string, string | undefined>>({});
 
   registrar(): void {
     if (this.form.invalid) {
