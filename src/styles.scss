@@ -36,3 +36,149 @@ body {
   background-color: v.$aqua-700;
   border-color: v.$aqua-700;
 }
+
+// Diagrama SVG (paleta aguamarina). Las clases dg- las usan los componentes del diagrama.
+.dg-pool {
+  fill: #fff;
+  stroke: v.$aqua-800;
+  stroke-width: 2;
+}
+
+.dg-caja-negra {
+  fill: v.$aqua-100;
+}
+
+.dg-etiqueta {
+  fill: v.$aqua-700;
+}
+
+.dg-lane {
+  fill: #fff;
+  stroke: v.$aqua-600;
+  stroke-width: 1;
+}
+
+.dg-lane-etiqueta {
+  fill: v.$aqua-100;
+  stroke: v.$aqua-600;
+  stroke-width: 1;
+}
+
+.dg-texto-etiqueta {
+  fill: v.$aqua-900;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dg-texto-pool {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dg-texto {
+  fill: v.$ink;
+  font-size: 12px;
+}
+
+.dg-tipo {
+  fill: v.$aqua-700;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.dg-actividad {
+  fill: v.$aqua-50;
+  stroke: v.$aqua-700;
+  stroke-width: 1.8;
+}
+
+.dg-gateway {
+  fill: #fff7d6;
+  stroke: v.$aqua-800;
+  stroke-width: 1.8;
+}
+
+.dg-simbolo {
+  fill: none;
+  stroke: v.$aqua-800;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.dg-evento {
+  fill: #fff;
+  stroke: v.$aqua-700;
+  stroke-width: 1.8;
+}
+
+.dg-sobre {
+  fill: none;
+  stroke: v.$aqua-800;
+  stroke-width: 1.6;
+}
+
+.dg-sobre-lleno {
+  fill: v.$aqua-800;
+  stroke: v.$aqua-800;
+}
+
+.dg-sobre-solapa {
+  fill: none;
+  stroke: v.$aqua-800;
+  stroke-width: 1.6;
+}
+
+.dg-sobre-lleno + .dg-sobre-solapa {
+  stroke: #fff;
+}
+
+.dg-arco {
+  fill: none;
+  stroke: v.$aqua-800;
+  stroke-width: 1.8;
+}
+
+.dg-mensaje {
+  fill: none;
+  stroke: v.$aqua-600;
+  stroke-width: 1.8;
+  stroke-dasharray: 6 4;
+}
+
+.dg-mensaje-alerta {
+  stroke: #c0392b;
+}
+
+.dg-clic {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  cursor: pointer;
+}
+
+.dg-halo {
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.dg-nodo,
+.dg-seleccionable {
+  cursor: pointer;
+}
+
+.dg-seleccionado .dg-actividad,
+.dg-seleccionado .dg-gateway,
+.dg-seleccionado .dg-evento,
+.dg-seleccionado.dg-seleccionable > rect {
+  stroke: #e67e22;
+  stroke-width: 3.2;
+}
+
+.dg-seleccionado.dg-arco-grupo .dg-arco,
+.dg-seleccionado.dg-arco-grupo .dg-mensaje {
+  stroke: #e67e22;
+  stroke-width: 3.2;
+}

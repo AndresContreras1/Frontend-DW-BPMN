@@ -1,0 +1,14 @@
+<svg:g>
+  <svg:circle class="dg-evento" cx="18" cy="18" r="17" />
+  @if (esIntermedio()) {
+    <svg:circle class="dg-evento" cx="18" cy="18" r="13" />
+  }
+  <svg:rect [attr.class]="esEnvio() ? 'dg-sobre dg-sobre-lleno' : 'dg-sobre'" x="9" y="12" width="18" height="12" />
+  <svg:polyline [attr.class]="'dg-sobre-solapa'" points="9,12 18,19 27,12" />
+  <svg:text class="dg-texto" text-anchor="middle">
+    @for (linea of lineas(); track $index) {
+      <svg:tspan [attr.x]="nodo().ancho / 2" [attr.y]="nodo().alto + 14 + $index * 13">{{ linea }}</svg:tspan>
+    }
+  </svg:text>
+  <svg:title>{{ nodo().nombre }}{{ esEnvio() ? ' (envío de mensaje)' : ' (recepción de mensaje)' }}</svg:title>
+</svg:g>

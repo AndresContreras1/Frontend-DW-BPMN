@@ -1,0 +1,95 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+  <div class="btn-group btn-group-sm" role="group" aria-label="Zoom del diagrama">
+    <button id="btnAlejar" type="button" class="btn btn-outline-primary" (click)="alejar()" aria-label="Alejar">−</button>
+    <button id="btnZoomRestablecer" type="button" class="btn btn-outline-primary" (click)="restablecer()">{{ zoom() * 100 }}%</button>
+    <button id="btnAcercar" type="button" class="btn btn-outline-primary" (click)="acercar()" aria-label="Acercar">+</button>
+  </div>
+  <span class="small text-secondary">Haz clic en un elemento para ver su detalle.</span>
+</div>
+
+@if (vacio()) {
+  <p class="text-secondary" id="txtDiagramaVacio">Este proceso todavía no tiene pools.</p>
+} @else {
+  <div class="border rounded-3 bg-white overflow-auto" id="contenedorDiagrama" style="max-height: 75vh">
+    <svg
+      id="svgDiagrama"
+      role="img"
+      aria-label="Diagrama BPMN del proceso"
+      xmlns="http://www.w3.org/2000/svg"
+      [attr.width]="vista().ancho * zoom()"
+      [attr.height]="vista().alto * zoom()"
+      [attr.viewBox]="'0 0 ' + vista().ancho + ' ' + vista().alto"
+    >
+      <defs>
+        <marker id="puntaArco" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#095246" />
+        </marker>
+        <marker id="puntaMensaje" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#ffffff" stroke="#0f8472" stroke-width="1.4" />
+        </marker>
+      </defs>
+
+      @for (p of vista().pools; track p.id) {
+        <g class="dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('pool', p.id)" [attr.id]="'pool' + p.id" (click)="elegir('pool', p.id)">
+          <rect class="dg-pool" [class.dg-caja-negra]="p.cajaNegra" [attr.x]="p.x" [attr.y]="p.y" [attr.width]="p.ancho" [attr.height]="p.alto" />
+          @if (p.cajaNegra) {
+            <text class="dg-texto-etiqueta" text-anchor="middle" [attr.x]="p.x + p.ancho / 2" [attr.y]="p.y + p.alto / 2 + 4">{{ p.nombre }} (caja negra)</text>
+          } @else {
+            <rect class="dg-etiqueta" [attr.x]="p.x" [attr.y]="p.y" width="36" [attr.height]="p.alto" />
+            <text class="dg-texto-pool" text-anchor="middle" [attr.transform]="'rotate(-90 ' + (p.x + 22) + ' ' + (p.y + p.alto / 2) + ')'" [attr.x]="p.x + 22" [attr.y]="p.y + p.alto / 2">{{ p.nombre }}</text>
+          }
+        </g>
+      }
+
+      @for (l of vista().lanes; track l.id) {
+        <g class="dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('lane', l.id)" [attr.id]="'lane' + l.id" (click)="elegir('lane', l.id)">
+          <rect class="dg-lane" [attr.x]="l.x" [attr.y]="l.y" [attr.width]="l.ancho" [attr.height]="l.alto" />
+          <rect class="dg-lane-etiqueta" [attr.x]="l.x" [attr.y]="l.y" width="32" [attr.height]="l.alto" />
+          <text class="dg-texto-etiqueta" text-anchor="middle" [attr.transform]="'rotate(-90 ' + (l.x + 19) + ' ' + (l.y + l.alto / 2) + ')'" [attr.x]="l.x + 19" [attr.y]="l.y + l.alto / 2">{{ l.nombre }}</text>
+        </g>
+      }
+
+      @for (a of vista().arcos; track a.id) {
+        <g class="dg-arco-grupo dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('arco', a.id)" [attr.id]="'arco' + a.id" (click)="elegir('arco', a.id)">
+          <path class="dg-arco" [attr.d]="a.d" marker-end="url(#puntaArco)" />
+          <path class="dg-clic" [attr.d]="a.d" />
+          @if (a.etiqueta || a.condicion) {
+            <text class="dg-texto dg-halo" text-anchor="middle" [attr.x]="a.etiquetaX" [attr.y]="a.etiquetaY">{{ textoArco(a.etiqueta, a.condicion) }}</text>
+            <text class="dg-texto" text-anchor="middle" [attr.x]="a.etiquetaX" [attr.y]="a.etiquetaY">{{ textoArco(a.etiqueta, a.condicion) }}</text>
+          }
+        </g>
+      }
+
+      @for (m of vista().mensajes; track m.id) {
+        <g class="dg-arco-grupo dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('mensaje', m.id)" [attr.id]="'mensaje' + m.id" (click)="elegir('mensaje', m.id)">
+          <path class="dg-mensaje" [class.dg-mensaje-alerta]="m.sinReceptor" [attr.d]="m.d" marker-end="url(#puntaMensaje)" />
+          <path class="dg-clic" [attr.d]="m.d" />
+          <text class="dg-texto dg-halo" text-anchor="middle" [attr.x]="m.etiquetaX" [attr.y]="m.etiquetaY">
+            @for (linea of lineasMensaje(m.nombre, m.clave, m.destinoExterno); track $index) {
+              <tspan [attr.x]="m.etiquetaX" [attr.dy]="$index === 0 ? 0 : 13">{{ linea }}</tspan>
+            }
+          </text>
+          <text class="dg-texto" text-anchor="middle" [attr.x]="m.etiquetaX" [attr.y]="m.etiquetaY">
+            @for (linea of lineasMensaje(m.nombre, m.clave, m.destinoExterno); track $index) {
+              <tspan [attr.x]="m.etiquetaX" [attr.dy]="$index === 0 ? 0 : 13">{{ linea }}</tspan>
+            }
+          </text>
+        </g>
+      }
+
+      @for (n of vista().nodos; track n.tipo + n.id) {
+        @switch (n.tipo) {
+          @case ('actividad') {
+            <g app-actividad-svg [attr.id]="'actividad' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('actividad', n.id)" (seleccionar)="elegir('actividad', n.id)"></g>
+          }
+          @case ('gateway') {
+            <g app-gateway-svg [attr.id]="'gateway' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('gateway', n.id)" (seleccionar)="elegir('gateway', n.id)"></g>
+          }
+          @case ('evento') {
+            <g app-evento-svg [attr.id]="'evento' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('evento', n.id)" (seleccionar)="elegir('evento', n.id)"></g>
+          }
+        }
+      }
+    </svg>
+  </div>
+}
