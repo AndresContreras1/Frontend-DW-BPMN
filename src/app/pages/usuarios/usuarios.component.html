@@ -1,0 +1,79 @@
+<h1 class="h3 text-primary mb-3">Usuarios de la empresa</h1>
+
+<section class="card mb-4" aria-labelledby="tituloInvitar">
+  <div class="card-body">
+    <h2 class="h5" id="tituloInvitar">Invitar a una persona</h2>
+    <p class="small text-secondary">Se genera un enlace de invitación. El sistema no envía correos: comparte el enlace con la persona invitada.</p>
+    <app-invitar-usuario (invitada)="alInvitar($event)" />
+    @if (invitacion(); as inv) {
+      <div class="alert alert-info mb-0" role="status" id="alertaInvitacion">
+        <p class="mb-1">Invitación para <strong>{{ inv.email }}</strong> ({{ etiquetaRol(inv.rolAcceso) }}), válida hasta {{ inv.fechaExpiracion }}.</p>
+        <p class="mb-0">Enlace: <code id="txtEnlaceInvitacion">{{ enlaceInvitacion(inv) }}</code></p>
+      </div>
+    }
+  </div>
+</section>
+
+<section aria-labelledby="tituloLista">
+  <h2 class="h5" id="tituloLista">Personas con acceso</h2>
+  @if (cargando()) {
+    <app-spinner-carga texto="Cargando usuarios..." />
+  } @else if (usuarios().length === 0) {
+    <app-estado-vacio mensaje="Aún no hay usuarios." />
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle bg-white" id="tablaUsuarios">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Correo</th>
+            <th scope="col">Rol de acceso</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of usuarios(); track u.id) {
+            <tr [id]="'filaUsuario' + u.id">
+              <td>{{ u.nombre }}</td>
+              <td>{{ u.email }}</td>
+              <td>
+                <label class="visually-hidden" [for]="'selRol' + u.id">Rol de acceso de {{ u.nombre }}</label>
+                <select
+                  class="form-select form-select-sm"
+                  [id]="'selRol' + u.id"
+                  [disabled]="!u.activo || u.id === auth.usuario()?.id"
+                  (change)="cambiarRol(u, $any($event.target).value)"
+                >
+                  @for (r of roles; track r.valor) {
+                    <option [value]="r.valor" [selected]="r.valor === u.rolAcceso">{{ r.etiqueta }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <span class="badge" [class.text-bg-success]="u.activo" [class.text-bg-secondary]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
+              </td>
+              <td class="text-end">
+                @if (u.activo) {
+                  <button type="button" class="btn btn-sm btn-outline-danger" [id]="'btnDesactivar' + u.id" [disabled]="u.id === auth.usuario()?.id" (click)="pedirDesactivar(u)">Desactivar</button>
+                } @else {
+                  <button type="button" class="btn btn-sm btn-outline-primary" [id]="'btnReactivar' + u.id" (click)="reactivar(u)">Reactivar</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<app-modal-confirmacion
+  [abierto]="usuarioADesactivar() !== null"
+  titulo="Desactivar usuario"
+  [mensaje]="'¿Desactivar a ' + (usuarioADesactivar()?.nombre ?? '') + '? No podrá iniciar sesión, pero su información se conserva.'"
+  textoConfirmar="Desactivar"
+  [procesando]="procesando()"
+  (confirmar)="confirmarDesactivar()"
+  (cancelar)="cancelarDesactivar()"
+/>

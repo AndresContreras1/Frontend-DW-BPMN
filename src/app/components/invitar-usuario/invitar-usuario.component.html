@@ -1,0 +1,16 @@
+<form [formGroup]="form" (ngSubmit)="invitar()" novalidate>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorInvitar">{{ error() }}</div>
+  }
+  <div class="row align-items-start">
+    <div class="col-12 col-md-6">
+      <app-campo-formulario idCampo="txtEmailInvitado" etiqueta="Correo de la persona invitada" tipo="email" [control]="form.controls.email" />
+    </div>
+    <div class="col-12 col-md-4">
+      <app-campo-formulario idCampo="selRolInvitado" etiqueta="Rol de acceso" tipo="select" [opciones]="roles" [control]="form.controls.rolAcceso" />
+    </div>
+    <div class="col-12 col-md-2 pt-md-4 mt-md-2">
+      <button id="btnInvitar" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">Invitar</button>
+    </div>
+  </div>
+</form>
