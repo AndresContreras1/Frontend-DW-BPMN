@@ -1,0 +1,25 @@
+# Dependencias y compilación
+/node_modules
+/dist
+/out-tsc
+/bazel-out
+/.angular/cache
+/.sass-cache
+/coverage
+/tmp
+
+# IDE y sistema
+/.idea
+.vscode/*
+!.vscode/extensions.json
+.project
+.classpath
+*.launch
+.settings/
+.DS_Store
+Thumbs.db
+
+# Variables locales y registros
+.env
+*.log
+npm-debug.log*
