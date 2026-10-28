@@ -3,6 +3,7 @@ import { authGuard } from './guards/auth.guard';
 import { rolGuard } from './guards/rol.guard';
 import { CompartidoDetalleComponent } from './pages/compartido-detalle/compartido-detalle.component';
 import { CompartidosComponent } from './pages/compartidos/compartidos.component';
+import { EditorProcesoComponent } from './pages/editor-proceso/editor-proceso.component';
 import { InvitacionComponent } from './pages/invitacion/invitacion.component';
 import { LoginComponent } from './pages/login/login.component';
 import { NoEncontradaComponent } from './pages/no-encontrada/no-encontrada.component';
@@ -23,6 +24,7 @@ export const routes: Routes = [
   // Las rutas específicas van antes que procesos/:id.
   { path: 'procesos/nuevo', component: ProcesoEdicionComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR', 'EDITOR'] } },
   { path: 'procesos/:id/editar', component: ProcesoEdicionComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR', 'EDITOR'] } },
+  { path: 'procesos/:id/editor', component: EditorProcesoComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR', 'EDITOR'] } },
   { path: 'procesos/:id', component: ProcesoDetalleComponent, canActivate: [authGuard] },
   { path: 'compartidos', component: CompartidosComponent, canActivate: [authGuard] },
   { path: 'compartidos/:id', component: CompartidoDetalleComponent, canActivate: [authGuard] },

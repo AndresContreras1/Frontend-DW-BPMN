@@ -18,6 +18,7 @@
     <div class="d-flex flex-wrap gap-2 align-items-center">
       <app-estado-proceso [proceso]="p" [puedeEditar]="auth.puedeEditar()" (cambiado)="alCambiarEstado($event)" />
       @if (auth.puedeEditar() && p.activo) {
+        <a id="btnAbrirEditor" class="btn btn-primary" [routerLink]="['/procesos', p.id, 'editor']">Abrir editor</a>
         <a id="btnEditarProceso" class="btn btn-outline-secondary" [routerLink]="['/procesos', p.id, 'editar']">Editar datos</a>
       }
     </div>

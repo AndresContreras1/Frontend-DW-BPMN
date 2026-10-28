@@ -1,0 +1,77 @@
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando editor..." />
+} @else if (error()) {
+  <div class="alert alert-danger" role="alert" id="alertaErrorEditor">{{ error() }}</div>
+  <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
+} @else {
+  @if (datos(); as d) {
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+      <div>
+        <h1 class="h3 text-primary mb-1" id="tituloEditor">Editor: {{ d.proceso.nombre }}</h1>
+        <a id="lnkVolverDetalle" [routerLink]="['/procesos', id]">← Volver al detalle del proceso</a>
+      </div>
+      <app-estado-proceso [proceso]="d.proceso" [puedeEditar]="auth.puedeEditar()" (cambiado)="alCambiarEstado($event)" />
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3" role="toolbar" aria-label="Agregar elementos" id="barraEditor">
+      <button id="btnNuevoPool" type="button" class="btn btn-primary btn-sm" (click)="nuevoPool()">+ Pool</button>
+      <button id="btnNuevaLane" type="button" class="btn btn-primary btn-sm" (click)="nuevaLane()">+ Lane</button>
+      <button id="btnNuevaActividad" type="button" class="btn btn-primary btn-sm" (click)="nuevoNodo('actividad')">+ Actividad</button>
+      <button id="btnNuevoGateway" type="button" class="btn btn-primary btn-sm" (click)="nuevoNodo('gateway')">+ Gateway</button>
+    </div>
+
+    <app-leyenda-diagrama />
+
+    <div class="row g-3">
+      <div class="col-12 col-xl-8">
+        <app-diagrama [datos]="d" [seleccion]="seleccion()" (seleccionar)="seleccion.set($event)" />
+      </div>
+      <div class="col-12 col-xl-4">
+        <div class="card mb-3" id="panelFormulario">
+          <div class="card-body">
+            @switch (formulario()?.tipo) {
+              @case ('pool') {
+                @if (como('pool'); as f) {
+                  <app-pool-form [procesoId]="id" [pool]="f.pool" (guardado)="alGuardar('Pool guardado.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @case ('lane') {
+                @if (como('lane'); as f) {
+                  <app-lane-form [poolId]="f.poolId" [lane]="f.lane" [roles]="roles()" (guardado)="alGuardar('Lane guardada.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @case ('actividad') {
+                @if (como('actividad'); as f) {
+                  <app-actividad-form [datos]="d" [actividad]="f.actividad" [laneInicial]="f.laneId" (guardado)="alGuardar('Actividad guardada.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @case ('gateway') {
+                @if (como('gateway'); as f) {
+                  <app-gateway-form [datos]="d" [gateway]="f.gateway" [laneInicial]="f.laneId" (guardado)="alGuardar('Gateway guardado.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @default {
+                <app-panel-elemento
+                  [datos]="d"
+                  [seleccion]="seleccion()"
+                  [puedeEditar]="auth.puedeEditar()"
+                  [puedeEliminar]="auth.esAdministrador()"
+                  (editar)="editar($event)"
+                  (eliminar)="pedirEliminar($event)"
+                  (nuevaLane)="nuevaLane($event)"
+                  (nuevoNodo)="nuevoNodo($event.tipo, $event.laneId)"
+                  (reordenar)="reordenar($event)"
+                  (seleccionar)="seleccion.set($event)"
+                />
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (aEliminar(); as elemento) {
+      <app-eliminar-elemento [datos]="d" [elemento]="elemento" (eliminado)="alEliminar()" (cancelar)="cancelarEliminar()" />
+    }
+  }
+}

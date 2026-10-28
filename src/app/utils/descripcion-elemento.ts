@@ -35,7 +35,7 @@ function texto(valor: string | number | undefined | null): string {
 
 /** Nombre de un nodo (actividad, gateway o evento) por su id. */
 export function nombreDeNodo(datos: DatosDiagrama, id: number | undefined): string {
-  if (id === undefined) {
+  if (!id) {
     return '—';
   }
   const nodo = [...datos.actividades, ...datos.gateways, ...datos.eventos].find((n) => n.id === id);
