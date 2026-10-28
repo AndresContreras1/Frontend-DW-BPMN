@@ -1,3 +1,11 @@
+// =====================================================================================
+// actividad-form.component.ts
+// Formulario para crear o editar una ACTIVIDAD (tarea) BPMN. Reglas del backend que refleja:
+//   - El nombre es único dentro del proceso (si se repite, el backend responde error y se muestra en el campo).
+//   - Toda actividad vive dentro de una LANE; la lane define el responsable (rol de proceso). Cambiar de lane = cambiar de responsable.
+//   - La posición (X, Y) es RELATIVA a la lane (no al lienzo): el diagrama suma el desplazamiento de la lane al dibujar.
+// Hereda de FormularioElementoBase (envío, errores, Output guardado/cancelar). Formulario reactivo tipado.
+// =====================================================================================
 import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActividadResponse } from '../../models/actividad.model';
@@ -19,13 +27,19 @@ import { FormularioElementoBase } from '../formulario-elemento.base';
   templateUrl: './actividad-form.component.html'
 })
 export class ActividadFormComponent extends FormularioElementoBase<ActividadResponse> implements OnInit {
+  /** Servicio HTTP de actividades. */
   private readonly actividadService = inject(ActividadService);
 
+  /** Modelo completo del diagrama: da las lanes disponibles y permite sugerir una posición libre. */
   readonly datos = input.required<DatosDiagrama>();
+  /** Actividad a editar; null = modo crear. */
   readonly actividad = input<ActividadResponse | null>(null);
+  /** Lane preseleccionada al crear (p. ej. la que el usuario eligió en el diagrama). */
   readonly laneInicial = input<number | undefined>(undefined);
+  /** Catálogo de tipos de actividad para el select. */
   readonly tipos = TIPOS_ACTIVIDAD;
 
+  /** Opciones del select de lane: "Rol · Pool" para distinguir lanes con el mismo rol en pools distintos. */
   readonly opcionesLanes = computed<OpcionLista[]>(() => {
     const lanes: LaneDatos[] = this.datos().lanes;
     return lanes.map((l) => {
@@ -34,6 +48,10 @@ export class ActividadFormComponent extends FormularioElementoBase<ActividadResp
     });
   });
 
+  /**
+   * Formulario tipado. Los números van como string porque son campos de texto; Validators.pattern('^[0-9]+$')
+   * exige enteros no negativos y se convierten con Number() al guardar. Valores por defecto de posición: 80, 60.
+   */
   readonly form = new FormGroup({
     nombre: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     descripcion: new FormControl('', { nonNullable: true }),
@@ -43,6 +61,10 @@ export class ActividadFormComponent extends FormularioElementoBase<ActividadResp
     posicionY: new FormControl('60', { nonNullable: true, validators: [Validators.required, Validators.pattern('^[0-9]+$')] })
   });
 
+  /**
+   * Edición: precarga todos los campos y termina (return). Creación: elige la lane inicial (la indicada o la primera)
+   * y propone una posición libre dentro de ella.
+   */
   ngOnInit(): void {
     const actual = this.actividad();
     if (actual) {
@@ -70,6 +92,7 @@ export class ActividadFormComponent extends FormularioElementoBase<ActividadResp
     }
   }
 
+  /** Valida, arma el cuerpo (descripción vacía se envía como undefined) y crea (en la lane elegida) o edita. */
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -88,6 +111,7 @@ export class ActividadFormComponent extends FormularioElementoBase<ActividadResp
     this.enviar(actual ? this.actividadService.editar(actual.id, datos) : this.actividadService.crear(datos.laneId, datos));
   }
 
+  /** Calcula una posición libre en la lane elegida (utilidad sugerirPosicion) y la vuelca al formulario con patchValue (actualiza solo esos campos). */
   private sugerir(): void {
     const laneId = Number(this.form.controls.laneId.value);
     if (!Number.isNaN(laneId) && laneId > 0) {

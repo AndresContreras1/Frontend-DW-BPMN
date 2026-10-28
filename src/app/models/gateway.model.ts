@@ -1,7 +1,10 @@
+// Modelos de los gateways (compuertas) BPMN: puntos donde el flujo se bifurca o se une.
 import { TipoGateway } from './enums.model';
 
+// Datos para crear o editar un gateway.
 export interface GatewayRequest {
   nombre: string;
+  // Exclusivo, paralelo o inclusivo; determina la semántica de las salidas.
   tipoGateway: TipoGateway;
   posicionX: number;
   posicionY: number;
@@ -9,6 +12,7 @@ export interface GatewayRequest {
   laneId?: number;
 }
 
+// Gateway devuelto por el backend, con su lane obligatoria.
 export interface GatewayResponse {
   id: number;
   nombre: string;

@@ -1,3 +1,6 @@
+// Convierte el elemento seleccionado en el diagrama en un texto descriptivo (título, tipo y
+// filas etiqueta/valor) para el panel de detalle. Son funciones puras: reciben datos y
+// devuelven datos, sin tocar el DOM ni servicios, por eso son fáciles de probar y reutilizar.
 import {
   POLITICAS_FALLO,
   POLITICAS_SIN_CASO,
@@ -11,17 +14,21 @@ import {
 import { SeleccionDiagrama } from '../models/seleccion-diagrama.model';
 import { DatosDiagrama } from './diagrama-layout';
 
+// Una línea del panel de detalle: "Etiqueta: valor".
 export interface FilaDescripcion {
   etiqueta: string;
   valor: string;
 }
 
+// Descripción completa lista para pintar en la plantilla.
 export interface DescripcionElemento {
   titulo: string;
   tipo: string;
   filas: FilaDescripcion[];
 }
 
+// Traduce un valor técnico del backend (ej. "SERVICIO_WEB") a su etiqueta legible usando las listas de enums.model;
+// si no la encuentra devuelve el valor tal cual y si viene vacío muestra un guion.
 function etiquetaDe(opciones: OpcionLista[], valor: string | undefined): string {
   if (!valor) {
     return '—';
@@ -29,10 +36,12 @@ function etiquetaDe(opciones: OpcionLista[], valor: string | undefined): string 
   return opciones.find((o) => o.valor === valor)?.etiqueta ?? valor;
 }
 
+// Normaliza valores vacíos (undefined, null o "") a un guion para que el panel nunca muestre huecos.
 function texto(valor: string | number | undefined | null): string {
   return valor === undefined || valor === null || valor === '' ? '—' : String(valor);
 }
 
+// Los tres tipos de nodo comparten id numérico y nombre, por eso se buscan juntos con el operador spread.
 /** Nombre de un nodo (actividad, gateway o evento) por su id. */
 export function nombreDeNodo(datos: DatosDiagrama, id: number | undefined): string {
   if (!id) {
@@ -42,15 +51,19 @@ export function nombreDeNodo(datos: DatosDiagrama, id: number | undefined): stri
   return nodo ? nodo.nombre : '#' + id;
 }
 
+// Muestra el rol responsable junto al nombre de la lane; si no existe, cae al id para no romper la vista.
 function nombreDeLane(datos: DatosDiagrama, id: number): string {
   const lane = datos.lanes.find((l) => l.id === id);
   return lane ? lane.rolProcesoNombre + ' (' + lane.nombre + ')' : '#' + id;
 }
 
+// El operador ?? entrega el id como respaldo cuando el pool no se encuentra.
 function nombreDePool(datos: DatosDiagrama, id: number): string {
   return datos.pools.find((p) => p.id === id)?.nombre ?? '#' + id;
 }
 
+// El switch sobre sel.tipo cubre cada tipo de elemento; "p && {...}" devuelve undefined si el elemento ya no existe
+// (por ejemplo, fue eliminado), y por eso el tipo de retorno admite undefined.
 /** Texto descriptivo del elemento elegido en el diagrama (para el panel de detalle). */
 function describir(datos: DatosDiagrama, sel: SeleccionDiagrama): DescripcionElemento | undefined {
   switch (sel.tipo) {
@@ -146,6 +159,8 @@ function describir(datos: DatosDiagrama, sel: SeleccionDiagrama): DescripcionEle
 }
 
 
+// Función pública: acepta null (nada seleccionado) y siempre devuelve null o una descripción, nunca undefined,
+// lo que simplifica el @if de la plantilla.
 export function describirElemento(datos: DatosDiagrama, sel: SeleccionDiagrama | null): DescripcionElemento | null {
   return sel ? (describir(datos, sel) ?? null) : null;
 }

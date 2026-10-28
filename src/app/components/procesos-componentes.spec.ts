@@ -1,3 +1,5 @@
+// Pruebas de los componentes de procesos: tabla, formularios, estado/publicación, compartir y resumen del diagrama.
+// Se usan espías (jasmine.createSpyObj) para sustituir los servicios y no llamar al backend real.
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -15,7 +17,9 @@ import { ProcesoFormComponent } from './proceso-form/proceso-form.component';
 import { ResumenDiagramaComponent } from './resumen-diagrama/resumen-diagrama.component';
 import { TablaProcesosComponent } from './tabla-procesos/tabla-procesos.component';
 
+// Tabla de procesos: qué acciones se ofrecen según los permisos.
 describe('TablaProcesosComponent', () => {
+  // Ayuda: crea la tabla con permisos y datos de prueba (procesoBase viene de testing/datos).
   function crear(puedeEditar: boolean, puedeEliminar: boolean, procesos: ProcesoResponse[] = [procesoBase]) {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const fixture = TestBed.createComponent(TablaProcesosComponent);
@@ -26,6 +30,7 @@ describe('TablaProcesosComponent', () => {
     return fixture;
   }
 
+  // Valida que sin permisos solo existe el botón Ver.
   it('soloLectura_noMuestraEditarNiEliminar', () => {
     const el: HTMLElement = crear(false, false).nativeElement;
     expect(el.querySelector('#btnVer7')).not.toBeNull();
@@ -33,6 +38,7 @@ describe('TablaProcesosComponent', () => {
     expect(el.querySelector('#btnEliminar7')).toBeNull();
   });
 
+  // Valida que con permisos aparecen Editar y Eliminar, y que Eliminar emite el proceso al padre.
   it('administrador_veEditarYEliminarYEmiteElProceso', () => {
     const fixture = crear(true, true);
     let emitido: ProcesoResponse | undefined;
@@ -42,6 +48,7 @@ describe('TablaProcesosComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#btnEditar7')).not.toBeNull();
   });
 
+  // Valida que un proceso eliminado muestra su insignia y no ofrece acciones aunque haya permisos.
   it('procesoEliminado_muestraEtiquetaYNoOfreceAcciones', () => {
     const el: HTMLElement = crear(true, true, [{ ...procesoBase, activo: false, estado: 'PUBLICADO' }]).nativeElement;
     expect(el.textContent).toContain('Eliminado');
@@ -50,7 +57,9 @@ describe('TablaProcesosComponent', () => {
   });
 });
 
+// Formulario de proceso: validación, emisión y modos crear/editar.
 describe('ProcesoFormComponent', () => {
+  // Valida que un formulario vacío no emite y deja el botón guardar deshabilitado.
   it('crear_formularioInvalido_noEmite', () => {
     const fixture = TestBed.createComponent(ProcesoFormComponent);
     fixture.detectChanges();
@@ -61,6 +70,7 @@ describe('ProcesoFormComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('#btnGuardarProceso')?.disabled).toBeTrue();
   });
 
+  // Valida que con datos válidos se emite el request esperado y el botón dice Crear proceso.
   it('crear_datosValidos_emiteElRequest', () => {
     const fixture = TestBed.createComponent(ProcesoFormComponent);
     fixture.detectChanges();
@@ -72,6 +82,7 @@ describe('ProcesoFormComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Crear proceso');
   });
 
+  // Valida que en modo edición el effect precarga el formulario y el botón dice Guardar cambios.
   it('editar_cargaLosDatosDelProcesoEnElFormulario', () => {
     const fixture = TestBed.createComponent(ProcesoFormComponent);
     fixture.componentRef.setInput('proceso', procesoBase);
@@ -80,6 +91,7 @@ describe('ProcesoFormComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Guardar cambios');
   });
 
+  // Valida que Cancelar emite el evento al padre.
   it('cancelar_emiteElEvento', () => {
     const fixture = TestBed.createComponent(ProcesoFormComponent);
     fixture.detectChanges();
@@ -90,9 +102,12 @@ describe('ProcesoFormComponent', () => {
   });
 });
 
+// Estado y publicación del proceso.
 describe('EstadoProcesoComponent', () => {
+  // Espía del servicio: permite controlar qué responde cambiarEstado.
   let procesos: jasmine.SpyObj<ProcesoService>;
 
+  // Ayuda: sustituye ProcesoService por el espía y crea el componente con sus inputs.
   function crear(proceso: ProcesoResponse, puedeEditar = true) {
     procesos = jasmine.createSpyObj<ProcesoService>('ProcesoService', ['cambiarEstado']);
     TestBed.configureTestingModule({ providers: [{ provide: ProcesoService, useValue: procesos }] });
@@ -103,16 +118,19 @@ describe('EstadoProcesoComponent', () => {
     return fixture;
   }
 
+  // Valida que un borrador editable muestra el estado y el botón Publicar.
   it('borradorConPermiso_ofreceElBotonPublicar', () => {
     const el: HTMLElement = crear(procesoBase).nativeElement;
     expect(el.querySelector('#btnPublicar')).not.toBeNull();
     expect(el.querySelector('#txtEstadoProceso')?.textContent).toContain('Borrador');
   });
 
+  // Valida que sin permiso de edición no se ofrece Publicar.
   it('soloLecturaOPublicado_noOfreceElBoton', () => {
     expect((crear(procesoBase, false).nativeElement as HTMLElement).querySelector('#btnPublicar')).toBeNull();
   });
 
+  // Valida el flujo feliz: pide confirmación, llama al servicio con PUBLICADO, emite el proceso y cierra el modal.
   it('publicar_exito_emiteElProcesoPublicado', () => {
     const fixture = crear(procesoBase);
     const publicado = { ...procesoBase, estado: 'PUBLICADO' as const };
@@ -127,6 +145,7 @@ describe('EstadoProcesoComponent', () => {
     expect(fixture.componentInstance.confirmando()).toBeFalse();
   });
 
+  // Valida que un 409 del backend se muestra como advertencia en pantalla.
   it('publicar_modeloIncoherente409_muestraLaAdvertenciaDelBackend', () => {
     const fixture = crear(procesoBase);
     procesos.cambiarEstado.and.returnValue(
@@ -138,6 +157,7 @@ describe('EstadoProcesoComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#alertaPublicacion')?.textContent).toContain('El nodo X no tiene salida.');
   });
 
+  // Valida que cancelar cierra el modal de confirmación.
   it('cancelar_cierraElModal', () => {
     const fixture = crear(procesoBase);
     fixture.componentInstance.pedirPublicar();
@@ -146,7 +166,9 @@ describe('EstadoProcesoComponent', () => {
   });
 });
 
+// Compartir proceso con otra empresa.
 describe('CompartirProcesoComponent', () => {
+  // Dato de prueba: una empresa invitada con solo lectura.
   const compartido: ProcesoCompartidoResponse = {
     id: 1,
     procesoId: 7,
@@ -157,8 +179,10 @@ describe('CompartirProcesoComponent', () => {
     empresaInvitada: 'Otra S.A.',
     soloLectura: true
   };
+  // Espía del servicio de procesos compartidos.
   let servicio: jasmine.SpyObj<ProcesoCompartidoService>;
 
+  // Ayuda: espía con lista inicial vacía y componente con procesoId = 7.
   function crear() {
     servicio = jasmine.createSpyObj<ProcesoCompartidoService>('ProcesoCompartidoService', ['listarDeProceso', 'compartir', 'dejarDeCompartir']);
     servicio.listarDeProceso.and.returnValue(of([]));
@@ -169,6 +193,7 @@ describe('CompartirProcesoComponent', () => {
     return fixture;
   }
 
+  // Valida que compartir llama al servicio con el id numérico y agrega la fila devuelta.
   it('compartir_agregaLaFilaConLaRespuestaDelBackend', () => {
     const fixture = crear();
     servicio.compartir.and.returnValue(of(compartido));
@@ -178,6 +203,7 @@ describe('CompartirProcesoComponent', () => {
     expect(fixture.componentInstance.compartidos()).toEqual([compartido]);
   });
 
+  // Valida que un id no numérico no llega al backend.
   it('compartir_idInvalido_noLlamaAlBackend', () => {
     const fixture = crear();
     fixture.componentInstance.empresaId.setValue('abc');
@@ -185,6 +211,7 @@ describe('CompartirProcesoComponent', () => {
     expect(servicio.compartir).not.toHaveBeenCalled();
   });
 
+  // Valida que el detalle del error del backend queda en el signal de error.
   it('compartir_error_muestraElDetalle', () => {
     const fixture = crear();
     servicio.compartir.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404, error: { detail: 'Empresa no encontrada.' } })));
@@ -193,6 +220,7 @@ describe('CompartirProcesoComponent', () => {
     expect(fixture.componentInstance.error()).toBe('Empresa no encontrada.');
   });
 
+  // Valida que la fila se quita cuando el backend confirma.
   it('dejarDeCompartir_quitaLaFilaCuandoElBackendConfirma', () => {
     servicio = jasmine.createSpyObj<ProcesoCompartidoService>('ProcesoCompartidoService', ['listarDeProceso', 'compartir', 'dejarDeCompartir']);
     servicio.listarDeProceso.and.returnValue(of([compartido]));
@@ -206,6 +234,7 @@ describe('CompartirProcesoComponent', () => {
     expect(fixture.componentInstance.compartidos().length).toBe(0);
   });
 
+  // Valida que si el backend rechaza (403) la fila se conserva y se muestra el error.
   it('dejarDeCompartir_error_mantieneLaFila', () => {
     servicio = jasmine.createSpyObj<ProcesoCompartidoService>('ProcesoCompartidoService', ['listarDeProceso', 'compartir', 'dejarDeCompartir']);
     servicio.listarDeProceso.and.returnValue(of([compartido]));
@@ -219,6 +248,7 @@ describe('CompartirProcesoComponent', () => {
     expect(fixture.componentInstance.error()).toBe('Solo el administrador.');
   });
 
+  // Valida que un fallo al listar al iniciar muestra un error.
   it('inicio_errorAlListar_muestraElError', () => {
     servicio = jasmine.createSpyObj<ProcesoCompartidoService>('ProcesoCompartidoService', ['listarDeProceso']);
     servicio.listarDeProceso.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
@@ -230,7 +260,9 @@ describe('CompartirProcesoComponent', () => {
   });
 });
 
+// Resumen numérico del diagrama.
 describe('ResumenDiagramaComponent', () => {
+  // Valida que el computed cuenta cada tipo (1 pool) y que se dibujan las 7 insignias.
   it('cuentaCadaTipoDeElemento', () => {
     const diagrama: ProcesoDiagramaResponse = {
       proceso: procesoBase,

@@ -1,25 +1,33 @@
+<!-- section con aria-labelledby apuntando al h2: región con nombre accesible. card/card-body: contenedor de Bootstrap. -->
 <section class="card" aria-labelledby="tituloCompartir">
   <div class="card-body">
     <h2 class="h5" id="tituloCompartir">Compartir con otra empresa</h2>
     <p class="small text-secondary">La otra empresa verá el proceso en modo solo lectura. Escribe el identificador de la empresa invitada.</p>
+    <!-- Error general (listar, compartir o quitar). -->
     @if (error()) {
       <div class="alert alert-danger" role="alert" id="alertaErrorCompartir">{{ error() }}</div>
     }
+    <!-- Formulario sencillo: (submit) con preventDefault evita recargar la página y llama a compartir(). Se usa el control suelto empresaId, sin formGroup. row/col-*: cuadrícula responsive de Bootstrap. -->
     <form class="row align-items-start" (submit)="$event.preventDefault(); compartir()" novalidate>
       <div class="col-12 col-sm-8">
+        <!-- Campo reutilizable enlazado al FormControl empresaId. -->
         <app-campo-formulario idCampo="txtEmpresaInvitada" etiqueta="Identificador de la empresa" [control]="empresaId" />
       </div>
       <div class="col-12 col-sm-4 pt-sm-4 mt-sm-2">
+        <!-- Deshabilitado mientras el identificador no sea válido. -->
         <button id="btnCompartir" type="submit" class="btn btn-primary w-100" [disabled]="!empresaId.valid">Compartir</button>
       </div>
     </form>
+    <!-- Estado vacío o lista según el contenido de la signal compartidos. -->
     @if (compartidos().length === 0) {
       <p class="small text-secondary mb-0">Este proceso no está compartido.</p>
     } @else {
       <ul class="list-group" id="listaCompartidos">
+        <!-- Una fila por empresa; track c.id es el id único del registro compartido. -->
         @for (c of compartidos(); track c.id) {
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <span>{{ c.empresaInvitada }} <span class="badge text-bg-info">Solo lectura</span></span>
+            <!-- [id] único por fila; (click) pasa el registro completo al método. -->
             <button type="button" class="btn btn-sm btn-outline-danger" [id]="'btnDejarCompartir' + c.id" (click)="dejarDeCompartir(c)">Dejar de compartir</button>
           </li>
         }

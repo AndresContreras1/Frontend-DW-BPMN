@@ -1,20 +1,27 @@
 <svg:g>
+  <!-- Rombo: polígono de 4 vértices calculado en `puntos()`. -->
   <svg:polygon class="dg-gateway" [attr.points]="puntos()" />
+  <!-- El símbolo interior depende del subtipo del gateway. Coordenadas pensadas para un rombo de 50x50 (centro 25,25). -->
   @switch (nodo().subtipo) {
     @case ('EXCLUSIVO') {
+      <!-- X: dos diagonales (16,16)-(34,34) y (34,16)-(16,34). M = mover, L = línea hasta. -->
       <svg:path class="dg-simbolo" d="M 16 16 L 34 34 M 34 16 L 16 34" />
     }
     @case ('PARALELO') {
+      <!-- +: una vertical (V) y una horizontal (H) que se cruzan en el centro (25,25). -->
       <svg:path class="dg-simbolo" d="M 25 13 V 37 M 13 25 H 37" />
     }
     @default {
+      <!-- Cualquier otro subtipo (inclusivo): círculo de radio 11 en el centro. -->
       <svg:circle class="dg-simbolo" cx="25" cy="25" r="11" />
     }
   }
+  <!-- Nombre debajo del rombo (y = alto + 14, 13 px entre líneas), centrado en x = ancho/2. -->
   <svg:text class="dg-texto" text-anchor="middle">
     @for (linea of lineas(); track $index) {
       <svg:tspan [attr.x]="nodo().ancho / 2" [attr.y]="nodo().alto + 14 + $index * 13">{{ linea }}</svg:tspan>
     }
   </svg:text>
+  <!-- Tooltip con el nombre completo. -->
   <svg:title>{{ nodo().nombre }}</svg:title>
 </svg:g>

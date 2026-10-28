@@ -1,10 +1,15 @@
+<!-- Prefijo `svg:` obliga a Angular a crear los elementos en el espacio de nombres SVG (si no, el navegador los trataría como HTML). -->
 <svg:g>
+  <!-- Cuerpo: rectángulo del tamaño del nodo (120x60 por defecto); rx/ry = 10 redondean las esquinas, forma típica de tarea BPMN. -->
   <svg:rect class="dg-actividad" [attr.width]="nodo().ancho" [attr.height]="nodo().alto" rx="10" ry="10" />
+  <!-- Tipo de la actividad, pequeño en la esquina superior izquierda (8 px del borde, 13 px desde arriba). -->
   <svg:text class="dg-tipo" x="8" y="13">{{ tipo() }}</svg:text>
+  <!-- Nombre centrado horizontalmente (x = ancho/2 con text-anchor=middle); cada tspan es una línea, separadas 14 px verticalmente. -->
   <svg:text class="dg-texto" text-anchor="middle">
     @for (linea of lineas(); track $index) {
       <svg:tspan [attr.x]="nodo().ancho / 2" [attr.y]="inicioTexto() + $index * 14">{{ linea }}</svg:tspan>
     }
   </svg:text>
+  <!-- title = tooltip nativo con el nombre completo (el texto dibujado puede estar recortado). -->
   <svg:title>{{ nodo().nombre }}</svg:title>
 </svg:g>

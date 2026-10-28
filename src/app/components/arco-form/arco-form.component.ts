@@ -1,3 +1,13 @@
+// =====================================================================================
+// arco-form.component.ts
+// Formulario para crear o editar un ARCO (flujo de secuencia: la flecha que une dos nodos del mismo pool).
+// Reglas BPMN del backend que refleja en pantalla:
+//   - Origen y destino distintos, del MISMO pool, y sin arcos duplicados (entre pools se usan mensajes, no arcos).
+//   - La CONDICIÓN solo aplica a arcos que salen de un gateway exclusivo o inclusivo (en el paralelo no hay condiciones).
+//   - Es OBLIGATORIA cuando el gateway DIVERGE (menos de 2 arcos entrantes: reparte el flujo); si CONVERGE
+//     (2 o más entrantes: junta caminos) es opcional.
+// Hereda de FormularioElementoBase. Aquí los validadores del formulario cambian dinámicamente.
+// =====================================================================================
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ArcoResponse } from '../../models/arco.model';
@@ -19,14 +29,20 @@ import { FormularioElementoBase } from '../formulario-elemento.base';
   templateUrl: './arco-form.component.html'
 })
 export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> implements OnInit {
+  /** Servicio HTTP de arcos. */
   private readonly arcoService = inject(ArcoService);
 
+  /** Modelo del diagrama: nodos, gateways y arcos existentes. */
   readonly datos = input.required<DatosDiagrama>();
+  /** Arco a editar; null = modo crear. */
   readonly arco = input<ArcoResponse | null>(null);
 
+  /** Lista unificada de nodos (actividades, gateways y eventos) con su etiqueta y pool. */
   readonly nodos = computed(() => listarNodos(this.datos()));
+  /** Id del origen elegido, copiado a un signal para que los computed de abajo reaccionen cuando cambie. */
   readonly origenId = signal<number | null>(null);
 
+  /** Opciones del select de origen: todos los nodos. */
   readonly opcionesOrigen = computed<OpcionLista[]>(() => this.nodos().map((n) => ({ valor: String(n.id), etiqueta: n.etiqueta })));
 
   /** El destino solo ofrece nodos del mismo pool que el origen y distintos a él. */
@@ -37,6 +53,7 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
       .map((n) => ({ valor: String(n.id), etiqueta: n.etiqueta }));
   });
 
+  /** True si el origen es un gateway NO paralelo (exclusivo o inclusivo): solo ahí tiene sentido la condición. */
   readonly pideCondicion = computed(() => {
     const gateway = this.datos().gateways.find((g) => g.id === this.origenId());
     return gateway !== undefined && gateway.tipoGateway !== 'PARALELO';
@@ -51,6 +68,7 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
     return this.datos().arcos.filter((a) => a.destinoId === gateway.id).length < 2;
   });
 
+  /** Formulario tipado. Origen y destino obligatorios (ids como texto del select); etiqueta y condición opcionales por defecto. */
   readonly form = new FormGroup({
     origenId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     destinoId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -58,6 +76,7 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
     condicion: new FormControl('', { nonNullable: true })
   });
 
+  /** Edición: precarga los campos, sincroniza el signal del origen y ajusta si la condición es obligatoria. */
   ngOnInit(): void {
     const actual = this.arco();
     if (actual) {
@@ -72,6 +91,10 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
     }
   }
 
+  /**
+   * Se ejecuta al cambiar el origen: actualiza el signal (null si no hay selección válida), reajusta el validador de la
+   * condición y, si el destino ya elegido deja de ser válido para el nuevo origen (otro pool), lo limpia.
+   */
   alCambiarOrigen(): void {
     const id = Number(this.form.controls.origenId.value);
     this.origenId.set(Number.isNaN(id) || id === 0 ? null : id);
@@ -82,12 +105,17 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
     }
   }
 
+  /**
+   * Validadores dinámicos: la condición pasa a ser required solo si el gateway de origen diverge.
+   * Tras cambiar los validadores hay que llamar updateValueAndValidity() para que Angular recalcule la validez.
+   */
   private ajustarValidadores(): void {
     const condicion = this.form.controls.condicion;
     condicion.setValidators(this.condicionObligatoria() ? [Validators.required] : []);
     condicion.updateValueAndValidity();
   }
 
+  /** Valida y arma el cuerpo: etiqueta vacía -> undefined; condición solo se envía si el origen es un gateway exclusivo/inclusivo. Crea o edita. */
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

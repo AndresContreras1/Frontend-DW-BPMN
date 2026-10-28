@@ -1,9 +1,13 @@
+<!-- Leyenda de símbolos (desplegable). -->
 <app-leyenda-diagrama />
+<!-- Rejilla Bootstrap: en pantallas xl el diagrama ocupa 9 de 12 columnas y el detalle 3; en pantallas menores se apilan (col-12). -->
 <div class="row g-3">
   <div class="col-12 col-xl-9">
+    <!-- Enlace de dos vías manual: [seleccion] baja el valor, (seleccionar) lo sube y actualiza el signal con el evento emitido ($event). -->
     <app-diagrama [datos]="datos()" [seleccion]="seleccion()" (seleccionar)="seleccion.set($event)" />
   </div>
   <div class="col-12 col-xl-3">
+    <!-- El detalle solo lee la selección para describirla. -->
     <app-detalle-elemento [datos]="datos()" [seleccion]="seleccion()" />
   </div>
 </div>

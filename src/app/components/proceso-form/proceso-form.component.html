@@ -1,11 +1,17 @@
+<!-- [formGroup] enlaza el formulario reactivo; (ngSubmit) llama a enviar() al pulsar submit; novalidate desactiva la validación nativa del navegador para usar la de Angular. -->
 <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+  <!-- Cada campo es el componente hijo: idCampo/etiqueta son textos fijos, [control] recibe el FormControl, [errorServidor] el error del backend para ese campo (o cadena vacía). -->
   <app-campo-formulario idCampo="txtNombre" etiqueta="Nombre del proceso" [control]="form.controls.nombre" [errorServidor]="errores()['nombre'] ?? ''" />
+  <!-- tipo=textarea: el hijo dibuja un textarea en lugar de un input. -->
   <app-campo-formulario idCampo="txtDescripcion" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" [errorServidor]="errores()['descripcion'] ?? ''" />
   <app-campo-formulario idCampo="txtCategoria" etiqueta="Categoría" ayuda="Por ejemplo: Recursos humanos, Compras, Ventas." [control]="form.controls.categoria" [errorServidor]="errores()['categoria'] ?? ''" />
+  <!-- Botones: submit deshabilitado si el formulario es inválido o si hay una petición en curso. -->
   <div class="d-flex gap-2">
+    <!-- El texto depende del modo: con proceso se edita, sin proceso se crea. -->
     <button id="btnGuardarProceso" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">
       {{ proceso() ? 'Guardar cambios' : 'Crear proceso' }}
     </button>
+    <!-- type=button evita que dispare el submit; solo emite cancelar. -->
     <button id="btnCancelarProceso" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
   </div>
 </form>

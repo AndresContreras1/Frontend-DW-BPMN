@@ -1,4 +1,6 @@
+<!-- list-inline: lista en línea de Bootstrap; cada elemento se muestra como insignia con su cantidad. -->
 <ul class="list-inline mb-0" id="resumenDiagrama">
+  <!-- track e.etiqueta: la etiqueta es única en la lista. -->
   @for (e of elementos(); track e.etiqueta) {
     <li class="list-inline-item badge text-bg-light border fs-6 fw-normal">{{ e.etiqueta }}: <strong>{{ e.cantidad }}</strong></li>
   }

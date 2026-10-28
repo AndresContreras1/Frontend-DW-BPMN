@@ -1,3 +1,4 @@
+# Integración continua: se ejecuta en cada push a main y en cada pull request hacia main.
 name: CI
 
 on:
@@ -10,6 +11,7 @@ jobs:
   construir-y-probar:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 baja todo el historial; Sonar lo necesita para atribuir líneas nuevas.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -19,15 +21,19 @@ jobs:
           node-version: 22
           cache: npm
 
+      # npm ci instala exactamente lo que dice package-lock.json (reproducible).
       - name: Instalar dependencias
         run: npm ci
 
+      # Compilar detecta errores de tipos y de plantillas (AOT) que las pruebas no ven.
       - name: Compilar
         run: npx ng build
 
+      # Genera coverage/frontend-dw-bpmn/lcov.info, que lee Sonar.
       - name: Pruebas con cobertura
         run: npx ng test --watch=false --browsers=ChromeHeadless --code-coverage
 
+      # Solo con el secreto disponible: pull requests del propio repositorio (los de forks no reciben secretos).
       - name: Análisis de Sonar
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         uses: SonarSource/sonarqube-scan-action@v5
@@ -35,6 +41,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
 
+      # Comprueba que la imagen Docker construye (solo si existe el Dockerfile en esa rama).
       - name: Construir imagen Docker
         if: hashFiles('Dockerfile') != ''
         run: docker build -t frontend-dw-bpmn .

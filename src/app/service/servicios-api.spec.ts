@@ -1,3 +1,18 @@
+// =============================================================================
+// servicios-api.spec.ts
+// Pruebas de los servicios HTTP "CRUD" (empresa, usuario, permisos, proceso,
+// compartidos, roles, pool, lane, actividad, gateway, evento de mensaje, arco y
+// mensaje). Cada prueba verifica que el servicio use el VERBO y la RUTA correctos
+// del backend; así un cambio accidental de endpoint hace fallar el test (contrato
+// frontend-backend).
+// Herramientas:
+//  - HttpTestingController: backend falso que intercepta las peticiones de HttpClient.
+//  - probarPeticion (src/app/testing/http.util.ts): función auxiliar que suscribe
+//    al Observable, localiza la petición con expectOne, comprueba el método HTTP
+//    y la URL (incluidos los query params), la responde con flush(respuesta) y
+//    devuelve la petición para revisar cuerpo o parámetros. Evita repetir ese
+//    código en cada prueba.
+// =============================================================================
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -17,24 +32,32 @@ import { ProcesoService } from './proceso.service';
 import { RolProcesoService } from './rol-proceso.service';
 import { UsuarioService } from './usuario.service';
 
+// Raíz de la API tomada de environment, igual que en los servicios.
 const api = environment.apiUrl;
 
+/** Conjunto de pruebas de contrato (verbo + ruta) de todos los servicios de la API. */
 describe('Servicios de la API', () => {
   let http: HttpTestingController;
 
+  // Configura el cliente HTTP de prueba antes de cada caso.
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
   });
 
+  // Falla si algún servicio dejó una petición sin atender (o hizo una inesperada).
   afterEach(() => http.verify());
 
+  // Registro de empresa: POST /empresas y el cuerpo enviado debe ser exactamente
+  // los datos del formulario (toEqual compara por contenido).
   it('EmpresaService_registrar_hacePostAEmpresas', () => {
     const datos = { nombreEmpresa: 'E', nit: '1', correoContacto: 'e@e.com', nombreAdmin: 'A', emailAdmin: 'a@e.com', passwordAdmin: '123456' };
     const { peticion } = probarPeticion(http, TestBed.inject(EmpresaService).registrar(datos), 'POST', api + '/empresas', { id: 1 });
     expect(peticion.request.body).toEqual(datos);
   });
 
+  // Recorre todos los endpoints de /usuarios, incluyendo el filtro opcional
+  // ?activo=false para ver desactivados, PATCH para actualizar e invitaciones por token.
   it('UsuarioService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(UsuarioService);
     probarPeticion(http, s.listar(), 'GET', api + '/usuarios', []);
@@ -47,6 +70,8 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.aceptarInvitacion('tok', { nombre: 'n', password: 'p' }), 'POST', api + '/usuarios/invitaciones/tok/aceptar', {});
   });
 
+  // Permisos de estructura por rol: listar todos, consultar el propio (/mio) y
+  // actualizar el de un rol (el rol va en la ruta).
   it('PermisoEstructuraService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(PermisoEstructuraService);
     probarPeticion(http, s.listar(), 'GET', api + '/permisos-estructura', []);
@@ -54,6 +79,9 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.actualizar('EDITOR', { crearPool: true, editarPool: true, eliminarPool: false, crearLane: true, editarLane: true, eliminarLane: false }), 'PUT', api + '/permisos-estructura/EDITOR', {});
   });
 
+  // Verifica que listar construye los HttpParams con todos los filtros dados
+  // (incluido activo=false, que es un valor válido y no debe omitirse) y que la
+  // página llega como parámetro. Se revisa también con params.get en la petición.
   it('ProcesoService_listar_enviaSoloLosFiltrosConValor', () => {
     const s = TestBed.inject(ProcesoService);
     const { peticion } = probarPeticion(
@@ -66,10 +94,13 @@ describe('Servicios de la API', () => {
     expect(peticion.request.params.get('activo')).toBe('false');
   });
 
+  // Sin filtros solo debe viajar pagina=0: no se mandan parámetros vacíos.
   it('ProcesoService_listarSinFiltros_pideLaPaginaCero', () => {
     probarPeticion(http, TestBed.inject(ProcesoService).listar(), 'GET', api + '/procesos?pagina=0', {});
   });
 
+  // CRUD de procesos más estado (PATCH con cuerpo { estado }), diagrama,
+  // historial y validación previa a publicar.
   it('ProcesoService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(ProcesoService);
     const datos = { nombre: 'n', descripcion: 'd', categoria: 'c' };
@@ -84,6 +115,8 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.validacion(1), 'GET', api + '/procesos/1/validacion', { valido: true, advertencias: [] });
   });
 
+  // Compartir procesos entre empresas: enviados (/procesos/{id}/compartidos) y
+  // recibidos (/procesos-compartidos).
   it('ProcesoCompartidoService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(ProcesoCompartidoService);
     probarPeticion(http, s.listarDeProceso(1), 'GET', api + '/procesos/1/compartidos', []);
@@ -93,6 +126,8 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.detalle(1), 'GET', api + '/procesos-compartidos/1', {});
   });
 
+  // Roles de proceso: la búsqueda omite el nombre cuando está vacío y lo añade
+  // (pagina primero, nombre después) cuando tiene valor.
   it('RolProcesoService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(RolProcesoService);
     probarPeticion(http, s.listar(), 'GET', api + '/roles', []);
@@ -104,6 +139,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(1), 'DELETE', api + '/roles/1', null);
   });
 
+  // Pools: listar/crear cuelgan del proceso; editar/eliminar van al pool directo.
   it('PoolService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(PoolService);
     probarPeticion(http, s.listar(1), 'GET', api + '/procesos/1/pools', []);
@@ -112,6 +148,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(5), 'DELETE', api + '/pools/5', null);
   });
 
+  // Lanes: listar/crear cuelgan del pool; reordenar usa PATCH con la lista de ids.
   it('LaneService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(LaneService);
     probarPeticion(http, s.listar(5), 'GET', api + '/pools/5/lanes', []);
@@ -121,6 +158,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(7), 'DELETE', api + '/lanes/7', null);
   });
 
+  // Actividades: CRUD y consulta de impacto antes de eliminar.
   it('ActividadService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(ActividadService);
     const datos = { nombre: 'a', posicionX: 1, posicionY: 2 };
@@ -131,6 +169,8 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(9), 'DELETE', api + '/actividades/9', null);
   });
 
+  // Gateways: CRUD y impacto de eliminación. `as const` fija el tipo literal
+  // 'EXCLUSIVO' para que coincida con el tipo del modelo.
   it('GatewayService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(GatewayService);
     const datos = { nombre: 'g', tipoGateway: 'EXCLUSIVO' as const, posicionX: 1, posicionY: 2 };
@@ -141,6 +181,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(4), 'DELETE', api + '/gateways/4', null);
   });
 
+  // Eventos de mensaje: CRUD por lane (envío/recepción de mensajes, con clave de correlación).
   it('EventoMensajeService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(EventoMensajeService);
     const datos = { nombre: 'e', tipoEvento: 'THROW' as const, contenido: 'c', claveCorrelacion: 'k', posicionX: 1, posicionY: 2, origenExterno: false };
@@ -150,6 +191,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(3), 'DELETE', api + '/eventos-mensaje/3', null);
   });
 
+  // Arcos: se listan por pool pero se crean con POST /arcos (origen y destino en el cuerpo).
   it('ArcoService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(ArcoService);
     probarPeticion(http, s.listar(5), 'GET', api + '/pools/5/arcos', []);
@@ -159,6 +201,7 @@ describe('Servicios de la API', () => {
     probarPeticion(http, s.eliminar(8), 'DELETE', api + '/arcos/8', null);
   });
 
+  // Mensajes y su correlación (sub-recurso: PUT para definirla, DELETE para quitarla).
   it('MensajeService_operaciones_usanLosEndpointsDelBackend', () => {
     const s = TestBed.inject(MensajeService);
     probarPeticion(http, s.listar(1), 'GET', api + '/procesos/1/mensajes', []);

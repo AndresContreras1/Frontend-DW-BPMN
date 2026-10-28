@@ -1,17 +1,22 @@
+<!-- Insignia de estado y botón Publicar en una fila que se ajusta (flex-wrap). -->
 <div class="d-flex flex-wrap align-items-center gap-2">
+  <!-- Color por estado con clases condicionales: verde publicado, amarillo borrador. -->
   <span class="badge fs-6" id="txtEstadoProceso" [class.text-bg-success]="proceso().estado === 'PUBLICADO'" [class.text-bg-warning]="proceso().estado === 'BORRADOR'">
     {{ proceso().estado === 'PUBLICADO' ? 'Publicado' : 'Borrador' }}
   </span>
+  <!-- Publicar solo si es borrador, el usuario puede editar y el proceso no está eliminado. -->
   @if (proceso().estado === 'BORRADOR' && puedeEditar() && proceso().activo) {
     <button id="btnPublicar" type="button" class="btn btn-sm btn-primary" (click)="pedirPublicar()">Publicar</button>
   }
 </div>
+<!-- Aviso con el motivo del rechazo del backend; role=alert lo anuncia a lectores de pantalla. -->
 @if (advertencia()) {
   <div class="alert alert-warning mt-2 mb-0" role="alert" id="alertaPublicacion">
     <p class="fw-semibold mb-1">No se pudo publicar: el modelo tiene incoherencias</p>
     <p class="mb-0">{{ advertencia() }}</p>
   </div>
 }
+<!-- Modal reutilizable: [abierto] y [procesando] enlazan señales; titulo y mensaje son textos fijos; (confirmar)/(cancelar) son los outputs del hijo conectados a métodos de este componente. -->
 <app-modal-confirmacion
   [abierto]="confirmando()"
   titulo="Publicar proceso"

@@ -1,18 +1,25 @@
+<!-- Maquetación Bootstrap: tarjeta centrada y responsiva (col-12 en móvil, 5/12 en pantallas grandes). -->
 <div class="row justify-content-center">
   <div class="col-12 col-md-8 col-lg-5">
     <div class="card">
       <div class="card-body p-4">
         <h1 class="h3 text-primary mb-3">Iniciar sesión</h1>
+        <!-- Alerta de error: solo se renderiza si el signal error() tiene texto (llamar al signal con () lee su valor). -->
         @if (error()) {
           <div class="alert alert-danger" role="alert" id="alertaErrorLogin">{{ error() }}</div>
         }
+        <!-- [formGroup] enlaza el FormGroup del componente; (ngSubmit) ejecuta ingresar(); novalidate desactiva la validación nativa del navegador para usar la de Angular. -->
         <form [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+          <!-- Componente reutilizable (label + input + mensajes de error). [control] recibe el FormControl de "email"; tipo="email" cambia el tipo de input. -->
           <app-campo-formulario idCampo="txtEmail" etiqueta="Correo electrónico" tipo="email" [control]="form.controls.email" />
+          <!-- Mismo componente para la contraseña (tipo password oculta los caracteres). -->
           <app-campo-formulario idCampo="txtPassword" etiqueta="Contraseña" tipo="password" [control]="form.controls.password" />
+          <!-- Se deshabilita si el formulario es inválido o hay una petición en curso; el texto cambia según enviando(). -->
           <button id="btnIngresar" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">
             {{ enviando() ? 'Ingresando...' : 'Ingresar' }}
           </button>
         </form>
+        <!-- Enlace al registro de empresa (HU-01) con [routerLink], sin recargar la página. -->
         <p class="small text-center mt-3 mb-0">
           ¿Tu empresa aún no está registrada?
           <a id="lnkIrRegistro" [routerLink]="['/registro']">Registrar empresa</a>

@@ -1,4 +1,8 @@
+// Estilos globales de la aplicación. Orden: 1) se carga Bootstrap personalizando sus variables con @use ... with,
+// 2) se define CSS propio encima. Sass @use reemplaza al antiguo @import y mantiene los nombres bajo un espacio de nombres (v. y bootstrap.).
+// Importa la paleta con el alias "v" para usar v.$aqua-600, etc.
 @use 'styles/variables' as v;
+// Carga Bootstrap pasando nuestras variables: así sus botones, enlaces y fondo adoptan la paleta aguamarina sin sobrescribir clases a mano.
 @use 'bootstrap/scss/bootstrap' with (
   $primary: v.$primary,
   $success: v.$success,
@@ -13,6 +17,8 @@
 );
 
 // CSS propio, después de Bootstrap.
+// Expone la paleta como variables CSS (custom properties) para usarlas desde las plantillas y los estilos de componentes.
+// La interpolación #{...} es necesaria para insertar valores de Sass dentro de una variable CSS.
 :root {
   --aqua-100: #{v.$aqua-100};
   --aqua-200: #{v.$aqua-200};
@@ -23,21 +29,26 @@
   --aqua-800: #{v.$aqua-800};
 }
 
+// Garantiza que la página ocupe al menos toda la pantalla.
 body {
   min-height: 100vh;
 }
 
+// Ajustes de Bootstrap: borde y sombra suave con el tono de la marca.
 .card {
   border-color: v.$aqua-200;
   box-shadow: 0 2px 8px rgb(15 132 114 / 8%);
 }
 
+// Hover del botón principal: un tono más oscuro de la paleta.
 .btn-primary:hover {
   background-color: v.$aqua-700;
   border-color: v.$aqua-700;
 }
 
 // Diagrama SVG (paleta aguamarina). Las clases dg- las usan los componentes del diagrama.
+// Estilos del diagrama SVG (prefijo dg- = diagrama). Están aquí, globales, porque el SVG se genera dinámicamente y debe compartir
+// colores con el resto de la aplicación. Grupo 1: contenedores (pool y lane) y sus etiquetas.
 .dg-pool {
   fill: #fff;
   stroke: v.$aqua-800;
@@ -64,6 +75,7 @@ body {
   stroke-width: 1;
 }
 
+// Textos del diagrama: etiquetas de lane/pool, nombres dentro de nodos y tipo del nodo (en mayúsculas pequeñas).
 .dg-texto-etiqueta {
   fill: v.$aqua-900;
   font-size: 12px;
@@ -87,6 +99,7 @@ body {
   text-transform: uppercase;
 }
 
+// Formas de los nodos: actividad (rectángulo), gateway (rombo, amarillo para distinguirlo) y evento (círculo).
 .dg-actividad {
   fill: v.$aqua-50;
   stroke: v.$aqua-700;
@@ -99,6 +112,7 @@ body {
   stroke-width: 1.8;
 }
 
+// Símbolos internos del gateway (X, +, O).
 .dg-simbolo {
   fill: none;
   stroke: v.$aqua-800;
@@ -112,6 +126,7 @@ body {
   stroke-width: 1.8;
 }
 
+// Icono de sobre de los eventos de mensaje: vacío para recepción (catch) y lleno para envío (throw).
 .dg-sobre {
   fill: none;
   stroke: v.$aqua-800;
@@ -129,10 +144,12 @@ body {
   stroke-width: 1.6;
 }
 
+// Selector de hermano adyacente (+): la solapa del sobre lleno se dibuja en blanco para que se vea sobre el fondo oscuro.
 .dg-sobre-lleno + .dg-sobre-solapa {
   stroke: #fff;
 }
 
+// Conectores: arco de secuencia (línea continua) y mensaje entre pools (línea punteada, roja si no tiene receptor).
 .dg-arco {
   fill: none;
   stroke: v.$aqua-800;
@@ -150,6 +167,7 @@ body {
   stroke: #c0392b;
 }
 
+// Zona de clic invisible y ancha sobre las líneas finas para que sean fáciles de seleccionar con el mouse.
 .dg-clic {
   fill: none;
   stroke: transparent;
@@ -157,6 +175,7 @@ body {
   cursor: pointer;
 }
 
+// Halo blanco detrás del texto (paint-order: stroke) para que sea legible sobre las líneas.
 .dg-halo {
   paint-order: stroke;
   stroke: #fff;
@@ -164,11 +183,13 @@ body {
   stroke-linejoin: round;
 }
 
+// Elementos interactivos: cursor de mano.
 .dg-nodo,
 .dg-seleccionable {
   cursor: pointer;
 }
 
+// Resaltado naranja del elemento seleccionado (nodos, contenedores, arcos y mensajes).
 .dg-seleccionado .dg-actividad,
 .dg-seleccionado .dg-gateway,
 .dg-seleccionado .dg-evento,

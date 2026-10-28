@@ -1,10 +1,14 @@
+<!-- Tres estados: cargando (spinner), error (alerta + volver) o contenido. -->
 @if (cargando()) {
   <app-spinner-carga texto="Cargando proceso compartido..." />
 } @else if (error()) {
   <div class="alert alert-danger" role="alert" id="alertaErrorCompartido">{{ error() }}</div>
+  <!-- Salida cuando hubo error: vuelve a la lista de compartidos. -->
   <a id="lnkVolverCompartidos" class="btn btn-outline-primary" [routerLink]="['/compartidos']">Volver a compartidos</a>
 } @else {
+  <!-- "as d" guarda el valor no nulo del signal en una variable local para usarla en la plantilla. -->
   @if (detalle(); as d) {
+  <!-- Datos básicos del proceso y empresa propietaria; la insignia deja claro que es solo lectura. -->
   <h1 class="h3 text-primary mb-1" id="tituloCompartido">{{ d.proceso.nombre }}</h1>
   <p class="text-secondary mb-2">{{ d.proceso.descripcion }}</p>
   <p>
@@ -14,7 +18,9 @@
   <section class="card" aria-labelledby="tituloModeloCompartido">
     <div class="card-body">
       <h2 class="h5" id="tituloModeloCompartido">Modelo del proceso</h2>
+      <!-- Resumen numérico del modelo (conteos de elementos) para el diagrama recibido. -->
       <app-resumen-diagrama [diagrama]="d" />
+      <!-- Visor del diagrama SOLO de lectura: no hay formularios ni botones de edición porque el proceso es de otra empresa. -->
       <div class="mt-3"><app-visor-proceso [datos]="d" /></div>
     </div>
   </section>

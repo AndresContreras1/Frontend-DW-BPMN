@@ -1,6 +1,10 @@
+<!-- Formulario reactivo: [formGroup], (ngSubmit) y novalidate (valida Angular, no el navegador). -->
 <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+  <!-- Campo hijo con la ayuda de qué es el nombre y el error del backend para 'nombre'. -->
   <app-campo-formulario idCampo="txtNombreRol" etiqueta="Nombre del rol de proceso" ayuda="Es el nombre que llevarán las lanes, por ejemplo: Gerente, Analista." [control]="form.controls.nombre" [errorServidor]="errores()['nombre'] ?? ''" />
+  <!-- Descripción opcional como textarea. -->
   <app-campo-formulario idCampo="txtDescripcionRol" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" [errorServidor]="errores()['descripcion'] ?? ''" />
+  <!-- Submit deshabilitado si es inválido o enviando; el texto cambia entre crear y guardar según rol(). -->
   <div class="d-flex gap-2">
     <button id="btnGuardarRol" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ rol() ? 'Guardar cambios' : 'Crear rol' }}</button>
     <button id="btnCancelarRol" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>

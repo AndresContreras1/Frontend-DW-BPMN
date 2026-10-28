@@ -1,8 +1,11 @@
+<!-- `@if (descripcion(); as d)`: guarda el resultado en la variable `d` y, si es null, cae al @else (mensaje de invitación). -->
 @if (descripcion(); as d) {
   <section class="card" aria-labelledby="tituloDetalleElemento" id="panelDetalleElemento">
     <div class="card-body">
+      <!-- Tipo del elemento (pool, lane, ...) en mayúsculas pequeñas y su título (nombre). -->
       <p class="small text-uppercase text-secondary mb-0">{{ d.tipo }}</p>
       <h3 class="h5 text-primary" id="tituloDetalleElemento">{{ d.titulo }}</h3>
+      <!-- Lista de definición (<dl>): cada fila es un par etiqueta (dt) / valor (dd). Se identifica cada fila por su etiqueta. -->
       <dl class="row small mb-0">
         @for (f of d.filas; track f.etiqueta) {
           <dt class="col-5 fw-semibold">{{ f.etiqueta }}</dt>
@@ -12,5 +15,6 @@
     </div>
   </section>
 } @else {
+  <!-- Sin selección: texto guía. -->
   <p class="small text-secondary" id="txtSinSeleccion">Selecciona un elemento del diagrama para ver su detalle.</p>
 }

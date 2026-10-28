@@ -1,3 +1,6 @@
+// Componente 'global': se coloca una sola vez en el layout y pinta las notificaciones del servicio compartido.
+// Componente 'global': se coloca una sola vez en el layout y pinta las notificaciones del servicio compartido.
+// Componente 'global': se coloca una sola vez en el layout y pinta las notificaciones del servicio compartido.
 import { Component, inject } from '@angular/core';
 import { NotificacionService } from '../../service/notificacion.service';
 
@@ -8,5 +11,17 @@ import { NotificacionService } from '../../service/notificacion.service';
   styleUrl: './toasts.component.scss'
 })
 export class ToastsComponent {
+  /**
+   * inject() obtiene el servicio singleton; así cualquier componente que llame a NotificacionService.exito()/error()
+   * hace aparecer un aviso aquí. Es público porque la plantilla lee notificaciones.notificaciones() (un signal).
+   */
+  /**
+   * inject() obtiene el servicio singleton; así cualquier componente que llame a NotificacionService.exito()/error()
+   * hace aparecer un aviso aquí. Es público porque la plantilla lee notificaciones.notificaciones() (un signal).
+   */
+  /**
+   * inject() obtiene el servicio singleton; así cualquier componente que llame a NotificacionService.exito()/error()
+   * hace aparecer un aviso aquí. Es público porque la plantilla lee notificaciones.notificaciones() (un signal).
+   */
   readonly notificaciones = inject(NotificacionService);
 }

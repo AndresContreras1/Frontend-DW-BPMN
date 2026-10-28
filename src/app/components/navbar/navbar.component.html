@@ -1,6 +1,15 @@
+<!-- navbar-expand-lg: menú horizontal desde pantallas lg; en móvil se colapsa. aria-label identifica la región de navegación. -->
+<!-- navbar-expand-lg: menú horizontal desde pantallas lg; en móvil se colapsa. aria-label identifica la región de navegación. -->
+<!-- navbar-expand-lg: menú horizontal desde pantallas lg; en móvil se colapsa. aria-label identifica la región de navegación. -->
 <nav class="navbar navbar-expand-lg navbar-dark app-navbar" aria-label="Navegación principal">
   <div class="container-fluid px-3 px-lg-4">
+    <!-- Marca del sitio. [routerLink] con arreglo de segmentos: navegación interna sin recargar. -->
+    <!-- Marca del sitio. [routerLink] con arreglo de segmentos: navegación interna sin recargar. -->
+    <!-- Marca del sitio. [routerLink] con arreglo de segmentos: navegación interna sin recargar. -->
     <a class="navbar-brand fw-semibold" [routerLink]="['/']">BPMN Procesos</a>
+    <!-- Botón hamburguesa: data-bs-toggle y data-bs-target (JS de Bootstrap) abren/cierran el menú; aria-controls y aria-expanded dan accesibilidad. -->
+    <!-- Botón hamburguesa: data-bs-toggle y data-bs-target (JS de Bootstrap) abren/cierran el menú; aria-controls y aria-expanded dan accesibilidad. -->
+    <!-- Botón hamburguesa: data-bs-toggle y data-bs-target (JS de Bootstrap) abren/cierran el menú; aria-controls y aria-expanded dan accesibilidad. -->
     <button
       id="btnMenu"
       class="navbar-toggler"
@@ -13,15 +22,30 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
+    <!-- Contenido colapsable controlado por el botón anterior (mismo id menuPrincipal). -->
+    <!-- Contenido colapsable controlado por el botón anterior (mismo id menuPrincipal). -->
+    <!-- Contenido colapsable controlado por el botón anterior (mismo id menuPrincipal). -->
     <div class="collapse navbar-collapse" id="menuPrincipal">
+      <!-- Enlaces de la izquierda; me-auto empuja el bloque de usuario hacia la derecha. -->
+      <!-- Enlaces de la izquierda; me-auto empuja el bloque de usuario hacia la derecha. -->
+      <!-- Enlaces de la izquierda; me-auto empuja el bloque de usuario hacia la derecha. -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <!-- Solo con sesión iniciada se muestran los enlaces de trabajo. -->
+        <!-- Solo con sesión iniciada se muestran los enlaces de trabajo. -->
+        <!-- Solo con sesión iniciada se muestran los enlaces de trabajo. -->
         @if (auth.autenticado()) {
           <li class="nav-item">
+            <!-- routerLinkActive=active resalta el enlace cuando la URL coincide. -->
+            <!-- routerLinkActive=active resalta el enlace cuando la URL coincide. -->
+            <!-- routerLinkActive=active resalta el enlace cuando la URL coincide. -->
             <a id="lnkProcesos" class="nav-link" [routerLink]="['/procesos']" routerLinkActive="active">Procesos</a>
           </li>
           <li class="nav-item">
             <a id="lnkCompartidos" class="nav-link" [routerLink]="['/compartidos']" routerLinkActive="active">Compartidos conmigo</a>
           </li>
+          <!-- Enlaces de administración: solo el rol ADMINISTRADOR (el backend también lo valida; esto solo oculta lo que no aplica). -->
+          <!-- Enlaces de administración: solo el rol ADMINISTRADOR (el backend también lo valida; esto solo oculta lo que no aplica). -->
+          <!-- Enlaces de administración: solo el rol ADMINISTRADOR (el backend también lo valida; esto solo oculta lo que no aplica). -->
           @if (auth.esAdministrador()) {
             <li class="nav-item">
               <a id="lnkRoles" class="nav-link" [routerLink]="['/roles']" routerLinkActive="active">Roles de proceso</a>
@@ -35,17 +59,32 @@
           }
         }
       </ul>
+      <!-- Bloque derecho: usuario actual o accesos de login/registro. -->
+      <!-- Bloque derecho: usuario actual o accesos de login/registro. -->
+      <!-- Bloque derecho: usuario actual o accesos de login/registro. -->
       <ul class="navbar-nav align-items-lg-center gap-lg-2">
+        <!-- 'as usuario' guarda el valor del signal en una variable local; la rama else cubre al visitante sin sesión. -->
+        <!-- 'as usuario' guarda el valor del signal en una variable local; la rama else cubre al visitante sin sesión. -->
+        <!-- 'as usuario' guarda el valor del signal en una variable local; la rama else cubre al visitante sin sesión. -->
         @if (auth.usuario(); as usuario) {
           <li class="nav-item text-light small" id="txtUsuarioActual">
             {{ usuario.nombre }}
+            <!-- Insignia con el rol de acceso traducido por etiquetaRol(). -->
+            <!-- Insignia con el rol de acceso traducido por etiquetaRol(). -->
+            <!-- Insignia con el rol de acceso traducido por etiquetaRol(). -->
             <span class="badge text-bg-light ms-1" id="txtRolAcceso">{{ etiquetaRol() }}</span>
           </li>
           <li class="nav-item">
+            <!-- (click) invoca cerrarSesion() del componente. -->
+            <!-- (click) invoca cerrarSesion() del componente. -->
+            <!-- (click) invoca cerrarSesion() del componente. -->
             <button id="btnCerrarSesion" type="button" class="btn btn-sm btn-outline-light" (click)="cerrarSesion()">Cerrar sesión</button>
           </li>
         } @else {
           <li class="nav-item">
+            <!-- Visitante sin sesión: acceso a login y registro. -->
+            <!-- Visitante sin sesión: acceso a login y registro. -->
+            <!-- Visitante sin sesión: acceso a login y registro. -->
             <a id="lnkLogin" class="nav-link" [routerLink]="['/login']" routerLinkActive="active">Iniciar sesión</a>
           </li>
           <li class="nav-item">

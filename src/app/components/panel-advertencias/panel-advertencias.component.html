@@ -1,10 +1,13 @@
 <section class="card" aria-labelledby="tituloAdvertencias" id="panelAdvertencias">
   <div class="card-body">
     <h2 class="h6" id="tituloAdvertencias">Advertencias del modelo</h2>
+    <!-- Tres estados: cargando (validacion null), válido (sin advertencias) o inválido (lista de advertencias). -->
     @if (validacion(); as v) {
       @if (v.valido) {
+        <!-- Modelo válido: se puede publicar. -->
         <p class="small text-success mb-1" id="txtSinAdvertencias">Sin advertencias: el proceso se puede publicar.</p>
       } @else {
+        <!-- Cada advertencia es un texto ya redactado por el backend; se identifica por su posición ($index) porque pueden repetirse. -->
         <ul class="small ps-3 mb-1" id="listaAdvertenciasModelo">
           @for (a of v.advertencias; track $index) {
             <li>{{ a }}</li>
@@ -12,6 +15,7 @@
         </ul>
       }
     } @else {
+      <!-- Aún no llega la respuesta. -->
       <p class="small text-secondary mb-1">Validando el modelo...</p>
     }
     <p class="small text-secondary mb-0">La validación la hace el backend con las mismas reglas que se aplican al publicar.</p>

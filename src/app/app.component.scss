@@ -1,3 +1,5 @@
+// Estilos del componente raíz. Angular los encapsula: solo afectan a este componente (ViewEncapsulation por defecto).
+// ":host" es el propio elemento <app-root>. Con flex en columna y altura mínima de pantalla, el footer queda abajo aunque el contenido sea corto.
 :host {
   display: flex;
   flex-direction: column;

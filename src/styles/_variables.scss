@@ -1,3 +1,5 @@
+// Variables de diseño (parcial de Sass: el guion bajo indica que no se compila solo, se importa con @use).
+// Un único lugar para la paleta evita colores repetidos y permite cambiar el tema completo.
 // Paleta aguamarina del sitio (también la usa el diagrama SVG).
 $aqua-50: #effaf8;
 $aqua-100: #d9f4ef;
@@ -10,6 +12,7 @@ $aqua-700: #0b6a5b;
 $aqua-800: #095246;
 $aqua-900: #063a32;
 
+// Colores de texto principal y secundario.
 $ink: #17312d;
 $ink-suave: #4a625e;
 
@@ -23,4 +26,5 @@ $body-bg: $aqua-50;
 $link-color: $aqua-600;
 $link-hover-color: $aqua-700;
 $border-radius: 0.6rem;
+// Tipografía del sistema: no requiere descargar fuentes externas.
 $font-family-sans-serif: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;

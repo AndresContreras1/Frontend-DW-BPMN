@@ -1,3 +1,4 @@
+// Componente de presentación que cuenta los elementos del modelo con un computed (valor derivado que se recalcula solo).
 import { Component, computed, input } from '@angular/core';
 import { DatosDiagrama } from '../../utils/diagrama-layout';
 
@@ -7,8 +8,13 @@ import { DatosDiagrama } from '../../utils/diagrama-layout';
   templateUrl: './resumen-diagrama.component.html'
 })
 export class ResumenDiagramaComponent {
+  /** Datos del diagrama ya cargados (obligatorio). */
   readonly diagrama = input.required<DatosDiagrama>();
 
+  /**
+   * computed: arma la lista etiqueta/cantidad a partir del diagrama. Solo se recalcula si cambia el input,
+   * por eso no se hace en la plantilla (evita cálculos repetidos en cada detección de cambios).
+   */
   readonly elementos = computed(() => {
     const d = this.diagrama();
     return [

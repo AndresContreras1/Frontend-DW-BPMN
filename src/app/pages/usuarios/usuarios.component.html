@@ -1,10 +1,14 @@
+<!-- Título de la página de usuarios (HU-02). -->
 <h1 class="h3 text-primary mb-3">Usuarios de la empresa</h1>
 
+<!-- Sección de invitación: el sistema genera un enlace (no envía correos). -->
 <section class="card mb-4" aria-labelledby="tituloInvitar">
   <div class="card-body">
     <h2 class="h5" id="tituloInvitar">Invitar a una persona</h2>
     <p class="small text-secondary">Se genera un enlace de invitación. El sistema no envía correos: comparte el enlace con la persona invitada.</p>
+    <!-- Componente hijo con el formulario de invitación; cuando el backend crea la invitación emite (invitada) y se llama alInvitar($event). -->
     <app-invitar-usuario (invitada)="alInvitar($event)" />
+    <!-- Muestra el resultado de la última invitación: correo, rol, vencimiento y el enlace para compartir. -->
     @if (invitacion(); as inv) {
       <div class="alert alert-info mb-0" role="status" id="alertaInvitacion">
         <p class="mb-1">Invitación para <strong>{{ inv.email }}</strong> ({{ etiquetaRol(inv.rolAcceso) }}), válida hasta {{ inv.fechaExpiracion }}.</p>
@@ -14,14 +18,17 @@
   </div>
 </section>
 
+<!-- Sección de la lista de usuarios. -->
 <section aria-labelledby="tituloLista">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
     <h2 class="h5 mb-0" id="tituloLista">{{ verDesactivados() ? 'Personas desactivadas' : 'Personas con acceso' }}</h2>
+    <!-- Alternador Activos/Desactivados. [class.x]="condición" agrega o quita la clase según el signal verDesactivados(). -->
     <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar por estado">
       <button id="btnVerActivos" type="button" class="btn" [class.btn-primary]="!verDesactivados()" [class.btn-outline-primary]="verDesactivados()" (click)="cambiarVista(false)">Activos</button>
       <button id="btnVerDesactivados" type="button" class="btn" [class.btn-primary]="verDesactivados()" [class.btn-outline-primary]="!verDesactivados()" (click)="cambiarVista(true)">Desactivados</button>
     </div>
   </div>
+  <!-- Estados: spinner -> vacío -> tabla. -->
   @if (cargando()) {
     <app-spinner-carga texto="Cargando usuarios..." />
   } @else if (usuarios().length === 0) {
@@ -39,27 +46,33 @@
           </tr>
         </thead>
         <tbody>
+          <!-- track u.id: identidad estable por fila. -->
           @for (u of usuarios(); track u.id) {
             <tr [id]="'filaUsuario' + u.id">
               <td>{{ u.nombre }}</td>
               <td>{{ u.email }}</td>
               <td>
+                <!-- Etiqueta solo para lectores de pantalla (accesibilidad) asociada al select por [for]. -->
                 <label class="visually-hidden" [for]="'selRol' + u.id">Rol de acceso de {{ u.nombre }}</label>
+                <!-- Cambio de rol de acceso: (change) llama cambiarRol. Se deshabilita si el usuario está inactivo o si es la propia cuenta del administrador (no se auto-modifica). $any evita el tipado estricto del evento. -->
                 <select
                   class="form-select form-select-sm"
                   [id]="'selRol' + u.id"
                   [disabled]="!u.activo || u.id === auth.usuario()?.id"
                   (change)="cambiarRol(u, $any($event.target).value)"
                 >
+                  <!-- Opciones del catálogo de roles de acceso; [selected] marca el rol actual del usuario. -->
                   @for (r of roles; track r.valor) {
                     <option [value]="r.valor" [selected]="r.valor === u.rolAcceso">{{ r.etiqueta }}</option>
                   }
                 </select>
               </td>
               <td>
+                <!-- Insignia de estado: verde si activo, gris si inactivo. -->
                 <span class="badge" [class.text-bg-success]="u.activo" [class.text-bg-secondary]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
               </td>
               <td class="text-end">
+                <!-- Acción según estado: activo -> Desactivar (abre el modal; no disponible para la propia cuenta); inactivo -> Reactivar directo. -->
                 @if (u.activo) {
                   <button type="button" class="btn btn-sm btn-outline-danger" [id]="'btnDesactivar' + u.id" [disabled]="u.id === auth.usuario()?.id" (click)="pedirDesactivar(u)">Desactivar</button>
                 } @else {
@@ -74,6 +87,7 @@
   }
 </section>
 
+<!-- Modal de confirmación de la desactivación; confirmar ejecuta confirmarDesactivar(). -->
 <app-modal-confirmacion
   [abierto]="usuarioADesactivar() !== null"
   titulo="Desactivar usuario"

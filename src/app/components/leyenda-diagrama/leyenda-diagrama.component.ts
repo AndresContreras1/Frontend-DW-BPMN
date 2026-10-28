@@ -1,3 +1,8 @@
+// =====================================================================================
+// leyenda-diagrama.component.ts
+// Leyenda desplegable que explica los símbolos del diagrama. No recibe datos: solo tiene
+// una lista fija de símbolos que la plantilla dibuja en miniatura con SVG.
+// =====================================================================================
 import { Component } from '@angular/core';
 
 /** Leyenda de los símbolos del diagrama (para entender qué significa cada forma). */
@@ -6,6 +11,10 @@ import { Component } from '@angular/core';
   templateUrl: './leyenda-diagrama.component.html'
 })
 export class LeyendaDiagramaComponent {
+  /**
+   * Catálogo de símbolos. `id` decide qué dibujo usa la plantilla (@switch) y `texto` es la explicación en español.
+   * Son 9: actividad, 3 gateways, 3 eventos de mensaje, arco (flujo de secuencia) y mensaje (flujo entre pools).
+   */
   readonly simbolos = [
     { id: 'actividad', texto: 'Actividad (rectángulo redondeado)' },
     { id: 'exclusivo', texto: 'Gateway exclusivo (rombo con X)' },

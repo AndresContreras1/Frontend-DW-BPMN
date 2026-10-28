@@ -1,14 +1,20 @@
+<!-- [formGroup] enlaza la plantilla con el FormGroup; (ngSubmit) llama a guardar(); novalidate desactiva la validación nativa del navegador (la hace Angular). -->
 <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <!-- Título según el modo: con pool existente se edita, si no se crea. -->
   <h3 class="h6">{{ pool() ? 'Editar pool' : 'Nuevo pool' }}</h3>
+  <!-- Error general devuelto por el backend (signal `error` de la clase base). -->
   @if (error()) {
     <div class="alert alert-danger" role="alert" id="alertaErrorPool">{{ error() }}</div>
   }
+  <!-- app-campo-formulario: componente reutilizable (etiqueta + input + mensajes de error). errorServidor muestra el error del backend para ese campo. -->
   <app-campo-formulario idCampo="txtNombrePool" etiqueta="Nombre del pool" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
   <app-campo-formulario idCampo="selTipoParticipante" etiqueta="Tipo de participante" tipo="select" [opciones]="tipos" [control]="form.controls.tipoParticipante" />
+  <!-- Caja negra: participante externo sin detalle interno (no tendrá lanes). Se enlaza directo con formControlName. -->
   <div class="form-check mb-3">
     <input id="chkCajaNegra" class="form-check-input" type="checkbox" formControlName="cajaNegra" />
     <label for="chkCajaNegra" class="form-check-label">Caja negra (pool externo sin lanes)</label>
   </div>
+  <!-- Guardar se deshabilita si el formulario es inválido o ya hay un envío en curso (evita doble clic). Cancelar solo avisa al padre con el Output. -->
   <div class="d-flex gap-2">
     <button id="btnGuardarPool" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ pool() ? 'Guardar cambios' : 'Crear pool' }}</button>
     <button id="btnCancelarPool" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>

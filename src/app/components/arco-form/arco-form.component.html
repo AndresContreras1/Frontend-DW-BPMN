@@ -3,14 +3,18 @@
   @if (error()) {
     <div class="alert alert-danger" role="alert" id="alertaErrorArco">{{ error() }}</div>
   }
+  <!-- Un arco une dos nodos distintos, así que hacen falta al menos dos. -->
   @if (nodos().length < 2) {
     <div class="alert alert-warning" role="alert">Un arco necesita al menos dos nodos (actividades, gateways o eventos).</div>
   }
+  <!-- El `change` del select de origen burbuja al div: recalcula destinos válidos y si la condición es obligatoria. -->
   <div (change)="alCambiarOrigen()">
     <app-campo-formulario idCampo="selOrigenArco" etiqueta="Nodo de origen" tipo="select" [opciones]="opcionesOrigen()" [control]="form.controls.origenId" [errorServidor]="erroresServidor()['origenId'] ?? ''" />
   </div>
+  <!-- Destino: opciones filtradas (mismo pool que el origen y distinto de él). -->
   <app-campo-formulario idCampo="selDestinoArco" etiqueta="Nodo de destino" tipo="select" ayuda="Solo se ofrecen nodos del mismo pool que el origen." [opciones]="opcionesDestino()" [control]="form.controls.destinoId" [errorServidor]="erroresServidor()['destinoId'] ?? ''" />
   <app-campo-formulario idCampo="txtEtiquetaArco" etiqueta="Etiqueta" [control]="form.controls.etiqueta" />
+  <!-- Condición: solo si sale de un gateway exclusivo/inclusivo. El texto de ayuda cambia según el gateway diverja (obligatoria) o converja (opcional). -->
   @if (pideCondicion()) {
     <app-campo-formulario idCampo="txtCondicionArco" etiqueta="Condición" [ayuda]="condicionObligatoria() ? 'Obligatoria: el gateway diverge (menos de 2 arcos entrantes).' : 'Opcional: el gateway converge (2 o más arcos entrantes).'" [control]="form.controls.condicion" [errorServidor]="erroresServidor()['condicion'] ?? ''" />
   } @else {

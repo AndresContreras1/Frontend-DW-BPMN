@@ -1,5 +1,7 @@
+<!-- Contenedor centrado de la página 404 (clases utilitarias de Bootstrap). -->
 <section class="py-5 text-center">
   <h1 class="display-5 text-primary">Página no encontrada</h1>
   <p class="lead">La dirección que buscas no existe.</p>
+  <!-- [routerLink] navega a "/" sin recargar la página; "/" redirige a "procesos" (ver app.routes.ts). El id sirve para pruebas. -->
   <a id="lnkVolverInicio" class="btn btn-primary" [routerLink]="['/']">Volver al inicio</a>
 </section>

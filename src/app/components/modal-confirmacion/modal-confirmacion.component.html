@@ -1,19 +1,43 @@
+<!-- Se renderiza solo cuando abierto es true. modal + show + d-block lo hacen visible sin depender del JS de Bootstrap. -->
+<!-- Se renderiza solo cuando abierto es true. modal + show + d-block lo hacen visible sin depender del JS de Bootstrap. -->
+<!-- Se renderiza solo cuando abierto es true. modal + show + d-block lo hacen visible sin depender del JS de Bootstrap. -->
 @if (abierto()) {
+  <!-- Accesibilidad: role=dialog, aria-modal y aria-labelledby apuntan al título para que el lector de pantalla anuncie el diálogo. -->
+  <!-- Accesibilidad: role=dialog, aria-modal y aria-labelledby apuntan al título para que el lector de pantalla anuncie el diálogo. -->
+  <!-- Accesibilidad: role=dialog, aria-modal y aria-labelledby apuntan al título para que el lector de pantalla anuncie el diálogo. -->
   <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tituloModalConfirmacion" id="modalConfirmacion">
+    <!-- modal-dialog-centered: centra el cuadro verticalmente. -->
+    <!-- modal-dialog-centered: centra el cuadro verticalmente. -->
+    <!-- modal-dialog-centered: centra el cuadro verticalmente. -->
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
+        <!-- Encabezado: título y botón X (btn-close) que emite cancelar. -->
+        <!-- Encabezado: título y botón X (btn-close) que emite cancelar. -->
+        <!-- Encabezado: título y botón X (btn-close) que emite cancelar. -->
         <div class="modal-header">
           <h2 class="modal-title h5" id="tituloModalConfirmacion">{{ titulo() }}</h2>
           <button id="btnCerrarModal" type="button" class="btn-close" aria-label="Cerrar" (click)="cancelar.emit()"></button>
         </div>
+        <!-- Cuerpo: mensaje y advertencias, ambos condicionales. -->
+        <!-- Cuerpo: mensaje y advertencias, ambos condicionales. -->
+        <!-- Cuerpo: mensaje y advertencias, ambos condicionales. -->
         <div class="modal-body">
+          <!-- Mensaje solo si el padre lo envió. -->
+          <!-- Mensaje solo si el padre lo envió. -->
+          <!-- Mensaje solo si el padre lo envió. -->
           @if (mensaje()) {
             <p class="mb-2">{{ mensaje() }}</p>
           }
+          <!-- alert-warning de Bootstrap con la lista; role=alert hace que se anuncie. -->
+          <!-- alert-warning de Bootstrap con la lista; role=alert hace que se anuncie. -->
+          <!-- alert-warning de Bootstrap con la lista; role=alert hace que se anuncie. -->
           @if (advertencias().length > 0) {
             <div class="alert alert-warning mb-0" role="alert">
               <p class="fw-semibold mb-1">Advertencias</p>
               <ul class="mb-0 ps-3" id="listaAdvertencias">
+                <!-- track $index: las advertencias son texto que puede repetirse, así que se usa la posición. -->
+                <!-- track $index: las advertencias son texto que puede repetirse, así que se usa la posición. -->
+                <!-- track $index: las advertencias son texto que puede repetirse, así que se usa la posición. -->
                 @for (a of advertencias(); track $index) {
                   <li>{{ a }}</li>
                 }
@@ -21,8 +45,14 @@
             </div>
           }
         </div>
+        <!-- Pie: Cancelar y Confirmar. Las dos salidas se emiten con (click) hacia el padre. -->
+        <!-- Pie: Cancelar y Confirmar. Las dos salidas se emiten con (click) hacia el padre. -->
+        <!-- Pie: Cancelar y Confirmar. Las dos salidas se emiten con (click) hacia el padre. -->
         <div class="modal-footer">
           <button id="btnCancelarModal" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+          <!-- Confirmar: [class.btn-danger] / [class.btn-primary] cambian el color según peligro(); [disabled] bloquea mientras procesando() es true. -->
+          <!-- Confirmar: [class.btn-danger] / [class.btn-primary] cambian el color según peligro(); [disabled] bloquea mientras procesando() es true. -->
+          <!-- Confirmar: [class.btn-danger] / [class.btn-primary] cambian el color según peligro(); [disabled] bloquea mientras procesando() es true. -->
           <button
             id="btnConfirmarModal"
             type="button"
@@ -36,5 +66,8 @@
       </div>
     </div>
   </div>
+  <!-- Fondo oscuro detrás del modal (backdrop de Bootstrap). -->
+  <!-- Fondo oscuro detrás del modal (backdrop de Bootstrap). -->
+  <!-- Fondo oscuro detrás del modal (backdrop de Bootstrap). -->
   <div class="modal-backdrop fade show"></div>
 }

@@ -1,14 +1,20 @@
 <svg:g>
+  <!-- Círculo exterior: el nodo mide 36x36 (TAM_EVENTO), así que centro (18,18) y radio 17 dejan 1 px para el grosor del trazo. -->
   <svg:circle class="dg-evento" cx="18" cy="18" r="17" />
+  <!-- Catch intermedio: segundo círculo concéntrico más pequeño (r=13) = "doble borde" de la notación BPMN. -->
   @if (esIntermedio()) {
     <svg:circle class="dg-evento" cx="18" cy="18" r="13" />
   }
+  <!-- Sobre: rectángulo 18x12 centrado en el círculo (x 9..27, y 12..24). Con clase dg-sobre-lleno (relleno oscuro) = envío; sin ella = recepción. -->
   <svg:rect [attr.class]="esEnvio() ? 'dg-sobre dg-sobre-lleno' : 'dg-sobre'" x="9" y="12" width="18" height="12" />
+  <!-- Solapa del sobre: línea en V desde las dos esquinas superiores (9,12) y (27,12) hasta el punto medio (18,19). -->
   <svg:polyline [attr.class]="'dg-sobre-solapa'" points="9,12 18,19 27,12" />
+  <!-- Nombre debajo del círculo: y = alto + 14 y 13 px entre líneas; centrado en x = ancho/2. -->
   <svg:text class="dg-texto" text-anchor="middle">
     @for (linea of lineas(); track $index) {
       <svg:tspan [attr.x]="nodo().ancho / 2" [attr.y]="nodo().alto + 14 + $index * 13">{{ linea }}</svg:tspan>
     }
   </svg:text>
+  <!-- Tooltip: nombre y si envía o recibe el mensaje. -->
   <svg:title>{{ nodo().nombre }}{{ esEnvio() ? ' (envío de mensaje)' : ' (recepción de mensaje)' }}</svg:title>
 </svg:g>

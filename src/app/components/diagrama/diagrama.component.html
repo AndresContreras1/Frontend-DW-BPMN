@@ -1,3 +1,4 @@
+<!-- Barra de zoom: botones que modifican el signal `zoom`; el porcentaje mostrado es zoom() * 100. -->
 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
   <div class="btn-group btn-group-sm" role="group" aria-label="Zoom del diagrama">
     <button id="btnAlejar" type="button" class="btn btn-outline-primary" (click)="alejar()" aria-label="Alejar">−</button>
@@ -7,10 +8,17 @@
   <span class="small text-secondary">Haz clic en un elemento para ver su detalle.</span>
 </div>
 
+<!-- Estado vacío: si no hay pools se muestra un texto; si los hay, se dibuja el SVG. -->
 @if (vacio()) {
   <p class="text-secondary" id="txtDiagramaVacio">Este proceso todavía no tiene pools.</p>
 } @else {
+  <!-- Contenedor con scroll (overflow-auto) y altura máxima: el SVG puede ser más grande que la pantalla, sobre todo con zoom. -->
   <div class="border rounded-3 bg-white overflow-auto" id="contenedorDiagrama" style="max-height: 75vh">
+    <!--
+      Lienzo SVG. viewBox define el sistema de coordenadas interno (ancho x alto calculados por el layout);
+      width/height reales = tamaño interno * zoom, por eso al hacer zoom el dibujo se escala sin recalcular nada.
+      Se usa [attr.width] (atributo) y no [width] (propiedad) porque en SVG esos son atributos, no propiedades del DOM.
+    -->
     <svg
       id="svgDiagrama"
       role="img"
@@ -20,27 +28,38 @@
       [attr.height]="vista().alto * zoom()"
       [attr.viewBox]="'0 0 ' + vista().ancho + ' ' + vista().alto"
     >
+      <!-- defs: definiciones reutilizables. Los markers son las puntas de flecha que se pegan al final de un path (marker-end). -->
       <defs>
+        <!-- Punta del arco de flujo: triángulo relleno verde oscuro. orient="auto-start-reverse" la gira según la dirección de la línea. -->
         <marker id="puntaArco" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#095246" />
         </marker>
+        <!-- Punta del mensaje: triángulo BLANCO con borde, convención BPMN para distinguir flujo de mensaje (entre pools) de flujo de secuencia. -->
         <marker id="puntaMensaje" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
           <path d="M 1 1 L 9 5 L 1 9 z" fill="#ffffff" stroke="#0f8472" stroke-width="1.4" />
         </marker>
       </defs>
 
+      <!--
+        CAPAS: en SVG lo que se dibuja después queda encima. Orden: pools (fondo) -> lanes -> arcos -> mensajes -> nodos.
+        Así los nodos tapan los extremos de las líneas y siempre reciben el clic.
+      -->
+      <!-- POOLS: un rectángulo por participante. Pool de caja negra = participante externo sin detalle interno (sin lanes). -->
       @for (p of vista().pools; track p.id) {
         <g class="dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('pool', p.id)" [attr.id]="'pool' + p.id" (click)="elegir('pool', p.id)">
           <rect class="dg-pool" [class.dg-caja-negra]="p.cajaNegra" [attr.x]="p.x" [attr.y]="p.y" [attr.width]="p.ancho" [attr.height]="p.alto" />
           @if (p.cajaNegra) {
+            <!-- Caja negra: el nombre va centrado en el rectángulo (y + alto/2; +4 compensa la línea base del texto). -->
             <text class="dg-texto-etiqueta" text-anchor="middle" [attr.x]="p.x + p.ancho / 2" [attr.y]="p.y + p.alto / 2 + 4">{{ p.nombre }} (caja negra)</text>
           } @else {
+            <!-- Pool normal: franja de 36 px a la izquierda con el nombre girado 90° (rotate(-90 cx cy) gira alrededor de ese punto). -->
             <rect class="dg-etiqueta" [attr.x]="p.x" [attr.y]="p.y" width="36" [attr.height]="p.alto" />
             <text class="dg-texto-pool" text-anchor="middle" [attr.transform]="'rotate(-90 ' + (p.x + 22) + ' ' + (p.y + p.alto / 2) + ')'" [attr.x]="p.x + 22" [attr.y]="p.y + p.alto / 2">{{ p.nombre }}</text>
           }
         </g>
       }
 
+      <!-- LANES: calles dentro de un pool. Cada una tiene una franja de 32 px a la izquierda con el nombre del rol, girado 90°. -->
       @for (l of vista().lanes; track l.id) {
         <g class="dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('lane', l.id)" [attr.id]="'lane' + l.id" (click)="elegir('lane', l.id)">
           <rect class="dg-lane" [attr.x]="l.x" [attr.y]="l.y" [attr.width]="l.ancho" [attr.height]="l.alto" />
@@ -49,21 +68,28 @@
         </g>
       }
 
+      <!-- ARCOS: flujos de secuencia entre nodos. `a.d` es la trayectoria SVG ya calculada (líneas rectas en ángulo recto). -->
       @for (a of vista().arcos; track a.id) {
         <g class="dg-arco-grupo dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('arco', a.id)" [attr.id]="'arco' + a.id" (click)="elegir('arco', a.id)">
+          <!-- Línea visible con punta de flecha al final. -->
           <path class="dg-arco" [attr.d]="a.d" marker-end="url(#puntaArco)" />
+          <!-- Misma trayectoria pero transparente y gruesa: agranda el área de clic (una línea fina sería difícil de pulsar). -->
           <path class="dg-clic" [attr.d]="a.d" />
           @if (a.etiqueta || a.condicion) {
+            <!-- Dos textos idénticos superpuestos: el primero (dg-halo) lleva un contorno blanco que da legibilidad sobre las líneas; el segundo es el texto real. -->
             <text class="dg-texto dg-halo" text-anchor="middle" [attr.x]="a.etiquetaX" [attr.y]="a.etiquetaY">{{ textoArco(a.etiqueta, a.condicion) }}</text>
             <text class="dg-texto" text-anchor="middle" [attr.x]="a.etiquetaX" [attr.y]="a.etiquetaY">{{ textoArco(a.etiqueta, a.condicion) }}</text>
           }
         </g>
       }
 
+      <!-- MENSAJES: flujos de mensaje entre pools distintos (un throw envía, un catch recibe). Se pintan en otro estilo que los arcos. -->
       @for (m of vista().mensajes; track m.id) {
         <g class="dg-arco-grupo dg-seleccionable" [class.dg-seleccionado]="esSeleccionado('mensaje', m.id)" [attr.id]="'mensaje' + m.id" (click)="elegir('mensaje', m.id)">
+          <!-- `sinReceptor` = mensaje sin evento catch en destino: se pinta en color de alerta para avisar que está incompleto. -->
           <path class="dg-mensaje" [class.dg-mensaje-alerta]="m.sinReceptor" [attr.d]="m.d" marker-end="url(#puntaMensaje)" />
           <path class="dg-clic" [attr.d]="m.d" />
+          <!-- Etiqueta multilínea con tspan: cada línea se desplaza 13 px hacia abajo (dy) respecto a la anterior; la primera (dy=0) no se mueve. También con halo. -->
           <text class="dg-texto dg-halo" text-anchor="middle" [attr.x]="m.etiquetaX" [attr.y]="m.etiquetaY">
             @for (linea of lineasMensaje(m.nombre, m.clave, m.destinoExterno); track $index) {
               <tspan [attr.x]="m.etiquetaX" [attr.dy]="$index === 0 ? 0 : 13">{{ linea }}</tspan>
@@ -77,15 +103,19 @@
         </g>
       }
 
+      <!-- NODOS (última capa, quedan encima): actividades, gateways y eventos. El track combina tipo + id porque ids de tipos distintos pueden repetirse. -->
       @for (n of vista().nodos; track n.tipo + n.id) {
         @switch (n.tipo) {
           @case ('actividad') {
+            <!-- Selector de atributo g[app-actividad-svg]: el componente ES el <g>; así el SVG sigue siendo válido (un <app-x> no es un elemento SVG). -->
             <g app-actividad-svg [attr.id]="'actividad' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('actividad', n.id)" (seleccionar)="elegir('actividad', n.id)"></g>
           }
           @case ('gateway') {
+            <!-- Gateway: rombo con símbolo según su tipo (exclusivo, paralelo, inclusivo). -->
             <g app-gateway-svg [attr.id]="'gateway' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('gateway', n.id)" (seleccionar)="elegir('gateway', n.id)"></g>
           }
           @case ('evento') {
+            <!-- Evento de mensaje: círculo con sobre (throw = envía, catch = recibe). -->
             <g app-evento-svg [attr.id]="'evento' + n.id" [nodo]="n" [seleccionado]="esSeleccionado('evento', n.id)" (seleccionar)="elegir('evento', n.id)"></g>
           }
         }

@@ -3,17 +3,21 @@
   @if (error()) {
     <div class="alert alert-danger" role="alert" id="alertaErrorGateway">{{ error() }}</div>
   }
+  <!-- Sin lanes no se puede crear un gateway. -->
   @if (opcionesLanes().length === 0) {
     <div class="alert alert-warning" role="alert">Primero crea una lane: los gateways viven dentro de una lane.</div>
   }
   <app-campo-formulario idCampo="txtNombreGateway" etiqueta="Nombre" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
   <app-campo-formulario idCampo="selTipoGateway" etiqueta="Tipo de gateway" tipo="select" [opciones]="tipos" [control]="form.controls.tipoGateway" />
+  <!-- Advertencia reactiva: aparece solo si el gateway existente cambia a PARALELO (el backend borrará las condiciones de sus arcos salientes). -->
   @if (avisaLimpiezaDeCondiciones()) {
     <div class="alert alert-warning small" role="alert" id="avisoParalelo">Al pasar a paralelo se eliminarán las condiciones de sus arcos salientes.</div>
   }
+  <!-- El `change` del select burbuja hasta el div: al cambiar de lane (en creación) se sugiere posición. `ayuda` es el texto auxiliar del campo. -->
   <div (change)="alCambiarLane()">
     <app-campo-formulario idCampo="selLaneGateway" etiqueta="Lane" ayuda="Cambiarla mueve el gateway a otra lane del proceso (sin arcos si es de otro pool)." tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" />
   </div>
+  <!-- Posición relativa a la lane. -->
   <div class="row">
     <div class="col-6">
       <app-campo-formulario idCampo="txtPosicionXGateway" etiqueta="Posición X" [control]="form.controls.posicionX" />

@@ -1,3 +1,4 @@
+<!-- Cabecera: título y botón "Nuevo proceso". El botón solo se renderiza si el rol de acceso permite editar (ADMINISTRADOR o EDITOR); el rol SOLO_LECTURA no lo ve. -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h3 text-primary mb-0">Procesos</h1>
   @if (auth.puedeEditar()) {
@@ -5,6 +6,7 @@
   }
 </div>
 
+<!-- Formulario de filtros (HU-06). (ngSubmit) -> buscar() reinicia en la página 0; [formGroup] enlaza el FormGroup "filtros". -->
 <form class="card card-body mb-3" [formGroup]="filtros" (ngSubmit)="buscar()" aria-label="Filtros de procesos">
   <div class="row align-items-end">
     <div class="col-12 col-md-6 col-lg-3">
@@ -14,40 +16,48 @@
       <app-campo-formulario idCampo="txtBuscarCategoria" etiqueta="Categoría" [control]="filtros.controls.categoria" />
     </div>
     <div class="col-6 col-lg-2">
+      <!-- tipo="select" con [opciones]: el mismo componente de campo sirve para inputs y selects. -->
       <app-campo-formulario idCampo="selFiltroEstado" etiqueta="Estado" tipo="select" [opciones]="opcionesEstado" [control]="filtros.controls.estado" />
     </div>
     <div class="col-6 col-lg-2">
       <app-campo-formulario idCampo="selFiltroVisibilidad" etiqueta="Mostrar" tipo="select" [opciones]="opcionesVisibilidad" [control]="filtros.controls.visibilidad" />
     </div>
     <div class="col-12 col-lg-2 mb-3 d-flex gap-2">
+      <!-- type="submit" dispara ngSubmit; el botón Limpiar es type="button" para que NO envíe el formulario y llama limpiar(). -->
       <button id="btnBuscar" type="submit" class="btn btn-primary flex-fill">Buscar</button>
       <button id="btnLimpiar" type="button" class="btn btn-outline-secondary flex-fill" (click)="limpiar()">Limpiar</button>
     </div>
   </div>
 </form>
 
+<!-- Alerta si falló la carga de la lista. -->
 @if (error()) {
   <div class="alert alert-danger" role="alert" id="alertaErrorProcesos">{{ error() }}</div>
 }
 
+<!-- Estados excluyentes: spinner mientras carga; luego, vacío o tabla con paginador. -->
 @if (cargando()) {
   <app-spinner-carga texto="Cargando procesos..." />
 } @else {
+  <!-- "as p" da el valor no nulo de la página (content, page, totalPages, totalElements). -->
   @if (pagina(); as p) {
   @if (p.content.length === 0) {
     <app-estado-vacio mensaje="No se encontraron procesos con esos filtros." />
   } @else {
+    <!-- Tabla presentacional: recibe los datos y los permisos por [inputs] y avisa la intención de eliminar con el output (eliminar). No llama al backend ella misma. -->
     <app-tabla-procesos
       [procesos]="p.content"
       [puedeEditar]="auth.puedeEditar()"
       [puedeEliminar]="auth.esAdministrador()"
       (eliminar)="pedirEliminar($event)"
     />
+    <!-- Paginador: muestra la página actual y totales; al elegir otra emite (cambiarPagina) con el número y la página llama cargar($event). -->
     <app-paginador [pagina]="p.page" [totalPaginas]="p.totalPages" [totalElementos]="p.totalElements" (cambiarPagina)="cargar($event)" />
   }
   }
 }
 
+<!-- Modal de confirmación de la baja lógica. Se abre cuando hay un proceso elegido; confirmar -> confirmarEliminar() (llamada al backend), cancelar -> cerrar. -->
 <app-modal-confirmacion
   [abierto]="procesoAEliminar() !== null"
   titulo="Eliminar proceso"

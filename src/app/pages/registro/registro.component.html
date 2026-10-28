@@ -1,25 +1,31 @@
+<!-- Tarjeta Bootstrap ancha (8/12) para el formulario de registro de empresa (HU-01). -->
 <div class="row justify-content-center">
   <div class="col-12 col-lg-8">
     <div class="card">
       <div class="card-body p-4">
         <h1 class="h3 text-primary mb-1">Registrar empresa</h1>
         <p class="text-secondary">Crea la cuenta de tu empresa y de su administrador.</p>
+        <!-- Alerta general: solo visible cuando error() tiene texto. -->
         @if (error()) {
           <div class="alert alert-danger" role="alert" id="alertaErrorRegistro">{{ error() }}</div>
         }
+        <!-- Un único formulario reactivo con dos secciones; (ngSubmit) ejecuta registrar(). -->
         <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
+          <!-- Sección 1: datos de la empresa. La grilla row/col-md-6 pone dos campos por fila en pantallas medianas. -->
           <h2 class="h5">Datos de la empresa</h2>
           <div class="row">
             <div class="col-12 col-md-6">
               <app-campo-formulario idCampo="txtNombreEmpresa" etiqueta="Nombre de la empresa" [control]="form.controls.nombreEmpresa" [errorServidor]="erroresServidor()['nombreEmpresa'] ?? ''" />
             </div>
             <div class="col-12 col-md-6">
+              <!-- El NIT debe ser único: si ya existe, el backend lo rechaza y el error vuelve por [errorServidor]. -->
               <app-campo-formulario idCampo="txtNit" etiqueta="NIT" ayuda="Debe ser único." [control]="form.controls.nit" [errorServidor]="erroresServidor()['nit'] ?? ''" />
             </div>
             <div class="col-12">
               <app-campo-formulario idCampo="txtCorreoContacto" etiqueta="Correo de contacto" tipo="email" [control]="form.controls.correoContacto" [errorServidor]="erroresServidor()['correoContacto'] ?? ''" />
             </div>
           </div>
+          <!-- Sección 2: usuario administrador que se crea junto con la empresa. -->
           <h2 class="h5 mt-2">Administrador de la empresa</h2>
           <div class="row">
             <div class="col-12 col-md-6">
@@ -32,9 +38,11 @@
               <app-campo-formulario idCampo="txtPasswordAdmin" etiqueta="Contraseña" tipo="password" ayuda="Mínimo 8 caracteres." [control]="form.controls.passwordAdmin" [errorServidor]="erroresServidor()['passwordAdmin'] ?? ''" />
             </div>
           </div>
+          <!-- Deshabilitado mientras el formulario sea inválido o se esté enviando. -->
           <button id="btnRegistrar" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">
             {{ enviando() ? 'Registrando...' : 'Registrar empresa' }}
           </button>
+          <!-- Enlace a /login para quien ya tiene cuenta (RouterLink, sin recarga). -->
           <a id="lnkIrLogin" class="btn btn-link" [routerLink]="['/login']">Ya tengo cuenta</a>
         </form>
       </div>

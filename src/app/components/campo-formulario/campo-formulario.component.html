@@ -1,28 +1,58 @@
+<!-- Contenedor del campo; mb-3 de Bootstrap = margen inferior (espacio entre campos). -->
+<!-- Contenedor del campo; mb-3 de Bootstrap = margen inferior (espacio entre campos). -->
+<!-- Contenedor del campo; mb-3 de Bootstrap = margen inferior (espacio entre campos). -->
 <div class="mb-3">
+  <!-- Accesibilidad: [for] enlaza la etiqueta con el control por id; al hacer clic en el texto se enfoca el campo y los lectores de pantalla lo leen. -->
+  <!-- Accesibilidad: [for] enlaza la etiqueta con el control por id; al hacer clic en el texto se enfoca el campo y los lectores de pantalla lo leen. -->
+  <!-- Accesibilidad: [for] enlaza la etiqueta con el control por id; al hacer clic en el texto se enfoca el campo y los lectores de pantalla lo leen. -->
   <label [for]="idCampo()" class="form-label">{{ etiqueta() }}</label>
+  <!-- Según el tipo se dibuja textarea, select o input. En los tres, [formControl] une el campo al FormControl del padre. -->
+  <!-- Según el tipo se dibuja textarea, select o input. En los tres, [formControl] une el campo al FormControl del padre. -->
+  <!-- Según el tipo se dibuja textarea, select o input. En los tres, [formControl] une el campo al FormControl del padre. -->
   @switch (tipo()) {
     @case ('textarea') {
+      <!-- [class.is-invalid] y [class.is-valid]: clases de validación de Bootstrap (borde rojo/verde), activadas con una condición. -->
+      <!-- [class.is-invalid] y [class.is-valid]: clases de validación de Bootstrap (borde rojo/verde), activadas con una condición. -->
+      <!-- [class.is-invalid] y [class.is-valid]: clases de validación de Bootstrap (borde rojo/verde), activadas con una condición. -->
       <textarea [id]="idCampo()" class="form-control" rows="3" [formControl]="control()" [placeholder]="placeholder()"
         [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid"></textarea>
     }
     @case ('select') {
+      <!-- form-select: estilo de Bootstrap para listas desplegables. -->
+      <!-- form-select: estilo de Bootstrap para listas desplegables. -->
+      <!-- form-select: estilo de Bootstrap para listas desplegables. -->
       <select [id]="idCampo()" class="form-select" [formControl]="control()"
         [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid">
+        <!-- Una option por cada elemento; track o.valor da identidad estable a cada fila para que Angular reutilice el DOM. -->
+        <!-- Una option por cada elemento; track o.valor da identidad estable a cada fila para que Angular reutilice el DOM. -->
+        <!-- Una option por cada elemento; track o.valor da identidad estable a cada fila para que Angular reutilice el DOM. -->
         @for (o of opciones(); track o.valor) {
           <option [value]="o.valor">{{ o.etiqueta }}</option>
         }
       </select>
     }
     @default {
+      <!-- Caso por defecto: input cuyo type viene de la propiedad tipo (text, email, password, number). -->
+      <!-- Caso por defecto: input cuyo type viene de la propiedad tipo (text, email, password, number). -->
+      <!-- Caso por defecto: input cuyo type viene de la propiedad tipo (text, email, password, number). -->
       <input [id]="idCampo()" class="form-control" [type]="tipo()" [formControl]="control()" [placeholder]="placeholder()"
         [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid" />
     }
   }
+  <!-- Ayuda opcional: solo se pinta si el padre la envió (cadena vacía = falsy). -->
+  <!-- Ayuda opcional: solo se pinta si el padre la envió (cadena vacía = falsy). -->
+  <!-- Ayuda opcional: solo se pinta si el padre la envió (cadena vacía = falsy). -->
   @if (ayuda()) {
     <div class="form-text">{{ ayuda() }}</div>
   }
+  <!-- Bloque de errores; d-block lo fuerza visible porque invalid-feedback de Bootstrap se oculta si el input no es hermano directo. El id idCampo + Error sirve para pruebas. -->
+  <!-- Bloque de errores; d-block lo fuerza visible porque invalid-feedback de Bootstrap se oculta si el input no es hermano directo. El id idCampo + Error sirve para pruebas. -->
+  <!-- Bloque de errores; d-block lo fuerza visible porque invalid-feedback de Bootstrap se oculta si el input no es hermano directo. El id idCampo + Error sirve para pruebas. -->
   @if (mostrarError()) {
     <div class="invalid-feedback d-block" [id]="idCampo() + 'Error'">
+      <!-- track m: el propio texto del mensaje identifica cada línea. -->
+      <!-- track m: el propio texto del mensaje identifica cada línea. -->
+      <!-- track m: el propio texto del mensaje identifica cada línea. -->
       @for (m of mensajes(); track m) {
         <div>{{ m }}</div>
       }

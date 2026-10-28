@@ -3,15 +3,19 @@
   @if (error()) {
     <div class="alert alert-danger" role="alert" id="alertaErrorActividad">{{ error() }}</div>
   }
+  <!-- Sin lanes no se puede crear una actividad: debe vivir dentro de una lane. -->
   @if (opcionesLanes().length === 0) {
     <div class="alert alert-warning" role="alert">Primero crea una lane: las actividades viven dentro de una lane.</div>
   }
+  <!-- errorServidor: muestra el error de "nombre duplicado" (único por proceso) que devuelve el backend. -->
   <app-campo-formulario idCampo="txtNombreActividad" etiqueta="Nombre (único en el proceso)" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
   <app-campo-formulario idCampo="txtDescripcionActividad" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" />
   <app-campo-formulario idCampo="selTipoActividad" etiqueta="Tipo de actividad" tipo="select" [opciones]="tipos" [control]="form.controls.tipoActividad" />
+  <!-- El evento nativo `change` del select burbujea hasta este div: al elegir otra lane se sugiere una posición libre en ella. -->
   <div (change)="alCambiarLane()">
     <app-campo-formulario idCampo="selLaneActividad" etiqueta="Lane (responsable)" tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" [errorServidor]="erroresServidor()['laneId'] ?? ''" />
   </div>
+  <!-- Posición relativa a la lane, en dos columnas (rejilla Bootstrap). -->
   <div class="row">
     <div class="col-6">
       <app-campo-formulario idCampo="txtPosicionXActividad" etiqueta="Posición X" [control]="form.controls.posicionX" />

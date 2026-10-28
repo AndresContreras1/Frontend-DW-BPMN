@@ -1,15 +1,21 @@
+<!-- Formulario reactivo; (ngSubmit) llama a invitar(). -->
 <form [formGroup]="form" (ngSubmit)="invitar()" novalidate>
+  <!-- Error general de la invitación. -->
   @if (error()) {
     <div class="alert alert-danger" role="alert" id="alertaErrorInvitar">{{ error() }}</div>
   }
+  <!-- Cuadrícula Bootstrap: columnas de 12 en móvil y repartidas desde md. -->
   <div class="row align-items-start">
     <div class="col-12 col-md-6">
+      <!-- tipo=email: input de correo reutilizando el campo hijo. -->
       <app-campo-formulario idCampo="txtEmailInvitado" etiqueta="Correo de la persona invitada" tipo="email" [control]="form.controls.email" />
     </div>
     <div class="col-12 col-md-4">
+      <!-- tipo=select con [opciones]: el hijo dibuja las opciones de roles. -->
       <app-campo-formulario idCampo="selRolInvitado" etiqueta="Rol de acceso" tipo="select" [opciones]="roles" [control]="form.controls.rolAcceso" />
     </div>
     <div class="col-12 col-md-2 pt-md-4 mt-md-2">
+      <!-- Deshabilitado si el formulario es inválido o hay petición en curso. -->
       <button id="btnInvitar" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">Invitar</button>
     </div>
   </div>

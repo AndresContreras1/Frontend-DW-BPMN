@@ -1,13 +1,17 @@
 <!doctype html>
+<!-- Página única de la SPA. Angular reemplaza <app-root> por la aplicación al arrancar (main.ts). -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <title>Editor de procesos BPMN</title>
+  <!-- <base href="/"> es obligatorio para que el router de Angular resuelva bien las URL relativas. -->
   <base href="/">
+  <!-- Hace que la página sea responsiva en móviles. -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
+  <!-- Selector del componente raíz (AppComponent); el contenido se genera dinámicamente. -->
   <app-root></app-root>
 </body>
 </html>

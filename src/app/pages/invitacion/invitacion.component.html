@@ -1,15 +1,21 @@
+<!-- Tarjeta Bootstrap centrada para el formulario de aceptación de invitación (HU-02). -->
 <div class="row justify-content-center">
   <div class="col-12 col-md-8 col-lg-5">
     <div class="card">
       <div class="card-body p-4">
         <h1 class="h3 text-primary mb-1">Aceptar invitación</h1>
         <p class="text-secondary">Completa tus datos para unirte a la empresa que te invitó.</p>
+        <!-- Alerta general: aparece solo cuando el signal error() tiene mensaje (p. ej. token vencido o ya usado). -->
         @if (error()) {
           <div class="alert alert-danger" role="alert" id="alertaErrorInvitacion">{{ error() }}</div>
         }
+        <!-- Formulario reactivo; (ngSubmit) llama aceptar(). El token NO está en el formulario: viene de la URL. -->
         <form [formGroup]="form" (ngSubmit)="aceptar()" novalidate>
+          <!-- [errorServidor] muestra bajo el campo el error que el backend asoció a "nombre" (si no hay, cadena vacía vía ?? ''). -->
           <app-campo-formulario idCampo="txtNombre" etiqueta="Nombre" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+          <!-- Contraseña con ayuda visible "Mínimo 8 caracteres"; también recibe el error del servidor para "password". -->
           <app-campo-formulario idCampo="txtPassword" etiqueta="Contraseña" tipo="password" ayuda="Mínimo 8 caracteres." [control]="form.controls.password" [errorServidor]="erroresServidor()['password'] ?? ''" />
+          <!-- Deshabilitado si el formulario es inválido o ya se está enviando; el texto refleja el estado. -->
           <button id="btnAceptarInvitacion" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">
             {{ enviando() ? 'Creando cuenta...' : 'Crear mi cuenta' }}
           </button>

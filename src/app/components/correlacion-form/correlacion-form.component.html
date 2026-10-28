@@ -1,6 +1,7 @@
 <section class="card mt-3" aria-labelledby="tituloCorrelacion" id="panelCorrelacion">
   <div class="card-body">
     <h3 class="h6" id="tituloCorrelacion">Correlación del mensaje</h3>
+    <!-- Estados: cargando -> (con correlación | sin correlación) -> formulario solo si tiene permiso de edición. -->
     @if (cargando()) {
       <p class="small text-secondary mb-0">Cargando...</p>
     } @else {
@@ -13,10 +14,12 @@
         <div class="alert alert-danger small" role="alert" id="alertaErrorCorrelacion">{{ error() }}</div>
       }
       @if (puedeEditar()) {
+        <!-- No hay FormGroup: se intercepta el submit, se evita la recarga nativa (preventDefault) y se llama a guardar(). -->
         <form (submit)="$event.preventDefault(); guardar()" novalidate>
           <app-campo-formulario idCampo="txtCriterioCorrelacion" etiqueta="Criterio de correlación" ayuda="Por ejemplo: numeroSolicitud." [control]="criterio" />
           <div class="d-flex gap-2">
             <button id="btnGuardarCorrelacion" type="submit" class="btn btn-sm btn-primary" [disabled]="!criterio.valid">Guardar correlación</button>
+            <!-- Quitar solo tiene sentido si ya existe una correlación. -->
             @if (correlacion()) {
               <button id="btnQuitarCorrelacion" type="button" class="btn btn-sm btn-outline-danger" (click)="quitar()">Quitar</button>
             }

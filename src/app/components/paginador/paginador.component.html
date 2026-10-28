@@ -1,15 +1,39 @@
+<!-- Con una sola página no hay nada que paginar, por eso todo el bloque se oculta. -->
+<!-- Con una sola página no hay nada que paginar, por eso todo el bloque se oculta. -->
+<!-- Con una sola página no hay nada que paginar, por eso todo el bloque se oculta. -->
 @if (totalPaginas() > 1) {
+  <!-- nav + aria-label: región de navegación identificable para lectores de pantalla. d-flex/flex-column/flex-sm-row: apilado en móvil, en fila desde sm. -->
+  <!-- nav + aria-label: región de navegación identificable para lectores de pantalla. d-flex/flex-column/flex-sm-row: apilado en móvil, en fila desde sm. -->
+  <!-- nav + aria-label: región de navegación identificable para lectores de pantalla. d-flex/flex-column/flex-sm-row: apilado en móvil, en fila desde sm. -->
   <nav aria-label="Paginación" class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
+    <!-- Resumen informativo; se suma 1 a pagina() porque internamente es base 0. -->
+    <!-- Resumen informativo; se suma 1 a pagina() porque internamente es base 0. -->
+    <!-- Resumen informativo; se suma 1 a pagina() porque internamente es base 0. -->
     <span class="small text-secondary" id="txtTotalElementos">{{ totalElementos() }} resultados · página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+    <!-- pagination, page-item y page-link: componente de paginación de Bootstrap. -->
+    <!-- pagination, page-item y page-link: componente de paginación de Bootstrap. -->
+    <!-- pagination, page-item y page-link: componente de paginación de Bootstrap. -->
     <ul class="pagination mb-0 flex-wrap">
+      <!-- Botón Anterior: disabled (visual) y [disabled] (real) cuando no hay página previa. -->
+      <!-- Botón Anterior: disabled (visual) y [disabled] (real) cuando no hay página previa. -->
+      <!-- Botón Anterior: disabled (visual) y [disabled] (real) cuando no hay página previa. -->
       <li class="page-item" [class.disabled]="!hayAnterior()">
         <button id="btnPaginaAnterior" type="button" class="page-link" [disabled]="!hayAnterior()" (click)="ir(pagina() - 1)">Anterior</button>
       </li>
+      <!-- Un botón por página; track p porque cada número es único. -->
+      <!-- Un botón por página; track p porque cada número es único. -->
+      <!-- Un botón por página; track p porque cada número es único. -->
       @for (p of paginas(); track p) {
         <li class="page-item" [class.active]="p === pagina()">
+          <!-- [attr.aria-current] marca la página actual para tecnologías de apoyo (null quita el atributo). [id] único por página para pruebas. -->
+          <!-- [attr.aria-current] marca la página actual para tecnologías de apoyo (null quita el atributo). [id] único por página para pruebas. -->
+          <!-- [attr.aria-current] marca la página actual para tecnologías de apoyo (null quita el atributo). [id] único por página para pruebas. -->
           <button type="button" class="page-link" [id]="'btnPagina' + (p + 1)" [attr.aria-current]="p === pagina() ? 'page' : null" (click)="ir(p)">{{ p + 1 }}</button>
         </li>
       }
+      <!-- Botón Siguiente, simétrico al Anterior. -->
+      <!-- Botón Siguiente, simétrico al Anterior. -->
+      <!-- Botón Siguiente, simétrico al Anterior. -->
       <li class="page-item" [class.disabled]="!haySiguiente()">
         <button id="btnPaginaSiguiente" type="button" class="page-link" [disabled]="!haySiguiente()" (click)="ir(pagina() + 1)">Siguiente</button>
       </li>

@@ -1,8 +1,20 @@
+<!-- toast-container + position-fixed top-0 end-0: contenedor flotante arriba a la derecha. aria-live=polite: los lectores de pantalla anuncian los avisos nuevos sin interrumpir. -->
+<!-- toast-container + position-fixed top-0 end-0: contenedor flotante arriba a la derecha. aria-live=polite: los lectores de pantalla anuncian los avisos nuevos sin interrumpir. -->
+<!-- toast-container + position-fixed top-0 end-0: contenedor flotante arriba a la derecha. aria-live=polite: los lectores de pantalla anuncian los avisos nuevos sin interrumpir. -->
 <div class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+  <!-- Un toast por notificación; track n.id porque cada una tiene identificador único. Al leer el signal, la vista se actualiza sola. -->
+  <!-- Un toast por notificación; track n.id porque cada una tiene identificador único. Al leer el signal, la vista se actualiza sola. -->
+  <!-- Un toast por notificación; track n.id porque cada una tiene identificador único. Al leer el signal, la vista se actualiza sola. -->
   @for (n of notificaciones.notificaciones(); track n.id) {
+    <!-- [class] arma la clase text-bg-{tipo} (success, danger, info...) según el tipo de aviso; show lo hace visible; role=alert lo anuncia. -->
+    <!-- [class] arma la clase text-bg-{tipo} (success, danger, info...) según el tipo de aviso; show lo hace visible; role=alert lo anuncia. -->
+    <!-- [class] arma la clase text-bg-{tipo} (success, danger, info...) según el tipo de aviso; show lo hace visible; role=alert lo anuncia. -->
     <div class="toast show align-items-center border-0 mb-2" [class]="'toast show align-items-center border-0 mb-2 text-bg-' + n.tipo" role="alert">
       <div class="d-flex">
         <div class="toast-body">{{ n.mensaje }}</div>
+        <!-- Botón cerrar: (click) llama al servicio para quitar este aviso por su id. -->
+        <!-- Botón cerrar: (click) llama al servicio para quitar este aviso por su id. -->
+        <!-- Botón cerrar: (click) llama al servicio para quitar este aviso por su id. -->
         <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Cerrar aviso" (click)="notificaciones.cerrar(n.id)"></button>
       </div>
     </div>

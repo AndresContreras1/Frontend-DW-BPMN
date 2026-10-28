@@ -1,5 +1,7 @@
+<!-- table-responsive: scroll horizontal en pantallas pequeñas. table-hover resalta la fila bajo el cursor. -->
 <div class="table-responsive">
   <table class="table table-hover align-middle bg-white" id="tablaProcesos">
+    <!-- scope=col en los th ayuda a los lectores de pantalla. d-none d-md-table-cell oculta la columna de fecha en móvil. -->
     <thead>
       <tr>
         <th scope="col">Nombre</th>
@@ -10,10 +12,13 @@
       </tr>
     </thead>
     <tbody>
+      <!-- Una fila por proceso; track p.id usa el identificador del backend para que Angular reutilice las filas. -->
       @for (p of procesos(); track p.id) {
         <tr [id]="'filaProceso' + p.id">
           <td>
+            <!-- [id] dinámico (único por fila) y [routerLink] con el id del proceso hacia el detalle. -->
             <a [id]="'lnkProceso' + p.id" [routerLink]="['/procesos', p.id]" class="fw-semibold">{{ p.nombre }}</a>
+            <!-- Los procesos eliminados lógicamente (activo = false) se marcan con una insignia. -->
             @if (!p.activo) {
               <span class="badge text-bg-secondary ms-1">Eliminado</span>
             }
@@ -21,16 +26,21 @@
           </td>
           <td>{{ p.categoria }}</td>
           <td>
+            <!-- Color según estado: verde publicado, amarillo borrador (clases condicionales). -->
             <span class="badge" [class.text-bg-success]="p.estado === 'PUBLICADO'" [class.text-bg-warning]="p.estado === 'BORRADOR'">
               {{ p.estado === 'PUBLICADO' ? 'Publicado' : 'Borrador' }}
             </span>
           </td>
+          <!-- Pipe date: formatea la fecha en texto legible sin lógica en el componente. -->
           <td class="d-none d-md-table-cell small">{{ p.fechaModificacion | date: 'yyyy-MM-dd HH:mm' }}</td>
           <td class="text-end text-nowrap">
+            <!-- Ver: siempre disponible. -->
             <a class="btn btn-sm btn-outline-primary" [id]="'btnVer' + p.id" [routerLink]="['/procesos', p.id]">Ver</a>
+            <!-- Editar: solo con permiso y si el proceso no fue eliminado. -->
             @if (puedeEditar() && p.activo) {
               <a class="btn btn-sm btn-outline-secondary ms-1" [id]="'btnEditar' + p.id" [routerLink]="['/procesos', p.id, 'editar']">Editar</a>
             }
+            <!-- Eliminar: (click) emite el proceso completo al padre. -->
             @if (puedeEliminar() && p.activo) {
               <button type="button" class="btn btn-sm btn-outline-danger ms-1" [id]="'btnEliminar' + p.id" (click)="eliminar.emit(p)">Eliminar</button>
             }

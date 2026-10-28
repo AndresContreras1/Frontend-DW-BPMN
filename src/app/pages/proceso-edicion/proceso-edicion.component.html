@@ -1,26 +1,34 @@
+<!-- Contenedor centrado de la página. -->
 <div class="row justify-content-center">
   <div class="col-12 col-lg-8">
+    <!-- Título dinámico según el modo: id === null -> creación; si no, edición. -->
     <h1 class="h3 text-primary mb-3">{{ id === null ? 'Nuevo proceso' : 'Editar proceso' }}</h1>
 
+    <!-- Alerta general de error (carga o guardado). -->
     @if (error()) {
       <div class="alert alert-danger" role="alert" id="alertaErrorProceso">{{ error() }}</div>
     }
 
+    <!-- Spinner mientras se carga (solo en edición); luego el formulario si es creación o si el proceso ya llegó; si no, solo el enlace de volver. -->
     @if (cargando()) {
       <app-spinner-carga texto="Cargando proceso..." />
     } @else if (id === null || proceso()) {
+      <!-- Tarjeta de estado: aparece solo en edición (cuando ya hay proceso cargado). -->
       @if (proceso(); as p) {
         <div class="card card-body mb-3">
           <h2 class="h6">Estado</h2>
+          <!-- Cambio de estado; aquí [puedeEditar]="true" porque la ruta ya exige rol ADMINISTRADOR/EDITOR. -->
           <app-estado-proceso [proceso]="p" [puedeEditar]="true" (cambiado)="alCambiarEstado($event)" />
         </div>
       }
       <div class="card">
         <div class="card-body">
+          <!-- Formulario reutilizable (hijo): [proceso] lo precarga en edición, [errores] muestra errores del backend por campo, (guardar)/(cancelar) son sus outputs. -->
           <app-proceso-form [proceso]="proceso()" [enviando]="enviando()" [errores]="errores()" (guardar)="guardar($event)" (cancelar)="cancelar()" />
         </div>
       </div>
     } @else {
+      <!-- Caso de error al cargar: no hay formulario, solo se ofrece volver. -->
       <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
     }
   </div>

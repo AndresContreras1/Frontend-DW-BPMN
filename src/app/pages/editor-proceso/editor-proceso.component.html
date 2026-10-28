@@ -1,18 +1,24 @@
+<!-- Estados de la página: cargando -> spinner; error -> alerta con enlace de salida; si no, el editor completo. -->
 @if (cargando()) {
   <app-spinner-carga texto="Cargando editor..." />
 } @else if (error()) {
   <div class="alert alert-danger" role="alert" id="alertaErrorEditor">{{ error() }}</div>
+  <!-- Salida cuando falló la carga del diagrama. -->
   <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
 } @else {
+  <!-- "as d" expone el diagrama no nulo a toda la plantilla; los hijos lo reciben por [datos]. -->
   @if (datos(); as d) {
+    <!-- Cabecera: nombre del proceso, enlace al detalle y selector de estado. -->
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
       <div>
         <h1 class="h3 text-primary mb-1" id="tituloEditor">Editor: {{ d.proceso.nombre }}</h1>
         <a id="lnkVolverDetalle" [routerLink]="['/procesos', id]">← Volver al detalle del proceso</a>
       </div>
+      <!-- Cambio de estado del proceso; (cambiado) actualiza el proceso mostrado cuando el backend confirmó. -->
       <app-estado-proceso [proceso]="d.proceso" [puedeEditar]="auth.puedeEditar()" (cambiado)="alCambiarEstado($event)" />
     </div>
 
+    <!-- Barra de herramientas para agregar elementos. + Pool y + Lane se deshabilitan según rol de acceso y permisos de estructura (puedeCrearPool/puedeCrearLane). Cada botón solo abre un formulario; no cambia el modelo. -->
     <div class="d-flex flex-wrap gap-2 mb-3" role="toolbar" aria-label="Agregar elementos" id="barraEditor">
       <button id="btnNuevoPool" type="button" class="btn btn-primary btn-sm" [disabled]="!puedeCrearPool()" (click)="nuevoPool()">+ Pool</button>
       <button id="btnNuevaLane" type="button" class="btn btn-primary btn-sm" [disabled]="!puedeCrearLane()" (click)="nuevaLane()">+ Lane</button>
@@ -23,52 +29,65 @@
       <button id="btnNuevoMensaje" type="button" class="btn btn-primary btn-sm" (click)="nuevoMensaje()">+ Mensaje</button>
     </div>
 
+    <!-- Leyenda visual de los símbolos del diagrama. -->
     <app-leyenda-diagrama />
 
+    <!-- Dos columnas en pantallas grandes: diagrama a la izquierda, panel de formulario/detalle y advertencias a la derecha. -->
     <div class="row g-3">
       <div class="col-12 col-xl-8">
+        <!-- Diagrama de solo presentación: recibe datos y selección; al hacer clic en un elemento emite (seleccionar) y la página guarda la selección. -->
         <app-diagrama [datos]="d" [seleccion]="seleccion()" (seleccionar)="seleccion.set($event)" />
       </div>
       <div class="col-12 col-xl-4">
+        <!-- Panel derecho: según formulario() muestra un formulario de alta/edición o el detalle del elemento seleccionado. -->
         <div class="card mb-3" id="panelFormulario">
           <div class="card-body">
+            <!-- @switch sobre el tipo del formulario abierto. Cada @case pinta el formulario de ese tipo; @default pinta el panel de detalle. -->
             @switch (formulario()?.tipo) {
               @case ('pool') {
+                <!-- Formulario de pool (HU-21). [pool] null = crear. (guardado) lo emite el hijo cuando el backend confirmó -> alGuardar recarga el diagrama. -->
                 @if (como('pool'); as f) {
                   <app-pool-form [procesoId]="id" [pool]="f.pool" (guardado)="alGuardar('Pool guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('lane') {
+                <!-- Formulario de lane (HU-22): [roles] son los roles de proceso del catálogo para elegir el responsable. -->
                 @if (como('lane'); as f) {
                   <app-lane-form [poolId]="f.poolId" [lane]="f.lane" [roles]="roles()" (guardado)="alGuardar('Lane guardada.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('actividad') {
+                <!-- Formulario de actividad (HU-08 a HU-10). [laneInicial] preselecciona la lane desde donde se creó. -->
                 @if (como('actividad'); as f) {
                   <app-actividad-form [datos]="d" [actividad]="f.actividad" [laneInicial]="f.laneId" (guardado)="alGuardar('Actividad guardada.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('gateway') {
+                <!-- Formulario de gateway (HU-14 a HU-16). -->
                 @if (como('gateway'); as f) {
                   <app-gateway-form [datos]="d" [gateway]="f.gateway" [laneInicial]="f.laneId" (guardado)="alGuardar('Gateway guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('evento') {
+                <!-- Formulario de evento de mensaje (HU-25 y HU-27). -->
                 @if (como('evento'); as f) {
                   <app-evento-form [datos]="d" [evento]="f.evento" [laneInicial]="f.laneId" (guardado)="alGuardar('Evento guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('arco') {
+                <!-- Formulario de arco / flujo de secuencia (HU-11, HU-12 y HU-15). -->
                 @if (como('arco'); as f) {
                   <app-arco-form [datos]="d" [arco]="f.arco" (guardado)="alGuardar('Arco guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @case ('mensaje') {
+                <!-- Formulario de mensaje entre pools (HU-25 a HU-28); necesita [procesoId] para sus peticiones. -->
                 @if (como('mensaje'); as f) {
                   <app-mensaje-form [procesoId]="id" [datos]="d" [mensaje]="f.mensaje" (guardado)="alGuardar('Mensaje guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
               @default {
+                <!-- Detalle del elemento seleccionado con sus acciones (editar, eliminar, nueva lane/nodo, reordenar lanes). Recibe rol y permisos para habilitar o no cada acción y emite outputs que esta página convierte en formularios o peticiones. -->
                 <app-panel-elemento
                   [datos]="d"
                   [seleccion]="seleccion()"
@@ -86,10 +105,12 @@
             }
           </div>
         </div>
+        <!-- Advertencias del modelo calculadas por el backend (validación) para guiar al usuario. -->
         <app-panel-advertencias [validacion]="validacion()" />
       </div>
     </div>
 
+    <!-- Confirmación de eliminación: el hijo hace el DELETE; al confirmar el backend emite (eliminado) y la página recarga el diagrama. -->
     @if (aEliminar(); as elemento) {
       <app-eliminar-elemento [datos]="d" [elemento]="elemento" (eliminado)="alEliminar()" (cancelar)="cancelarEliminar()" />
     }

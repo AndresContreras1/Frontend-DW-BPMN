@@ -1,10 +1,14 @@
+<!-- Tres estados: cargando, error (con enlace para volver) o contenido del proceso. -->
 @if (cargando()) {
   <app-spinner-carga texto="Cargando proceso..." />
 } @else if (error()) {
   <div class="alert alert-danger" role="alert" id="alertaErrorDetalle">{{ error() }}</div>
+  <!-- Salida cuando hubo error (p. ej. proceso inexistente). -->
   <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
 } @else {
+  <!-- "as p" expone el proceso no nulo a toda la sección. -->
   @if (proceso(); as p) {
+  <!-- Cabecera: datos del proceso, insignia "Eliminado" si activo=false, selector de estado y botones de edición. -->
   <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
     <div>
       <h1 class="h3 text-primary mb-1" id="tituloProceso">{{ p.nombre }}</h1>
@@ -16,7 +20,9 @@
       </p>
     </div>
     <div class="d-flex flex-wrap gap-2 align-items-center">
+      <!-- Cambio de estado del proceso (HU-05/HU-07). [puedeEditar] según rol de acceso; (cambiado) devuelve el proceso actualizado cuando el backend confirmó. -->
       <app-estado-proceso [proceso]="p" [puedeEditar]="auth.puedeEditar()" (cambiado)="alCambiarEstado($event)" />
+      <!-- Botones de edición solo para ADMINISTRADOR/EDITOR y solo si el proceso no está eliminado lógicamente. [routerLink] arma /procesos/:id/editor y /procesos/:id/editar. -->
       @if (auth.puedeEditar() && p.activo) {
         <a id="btnAbrirEditor" class="btn btn-primary" [routerLink]="['/procesos', p.id, 'editor']">Abrir editor</a>
         <a id="btnEditarProceso" class="btn btn-outline-secondary" [routerLink]="['/procesos', p.id, 'editar']">Editar datos</a>
@@ -24,6 +30,7 @@
     </div>
   </div>
 
+  <!-- Sección del modelo: resumen de conteos + visor del diagrama (solo se pinta cuando diagrama() ya llegó). -->
   <section class="card mb-4" aria-labelledby="tituloModelo">
     <div class="card-body">
       <h2 class="h5" id="tituloModelo">Modelo del proceso</h2>
@@ -34,6 +41,7 @@
     </div>
   </section>
 
+  <!-- Sección de historial de cambios (auditoría): vacía -> mensaje; con datos -> tabla. -->
   <section class="card mb-4" aria-labelledby="tituloHistorial">
     <div class="card-body">
       <h2 class="h5" id="tituloHistorial">Historial de cambios</h2>
@@ -46,6 +54,7 @@
               <tr><th scope="col">Fecha</th><th scope="col">Autor</th><th scope="col">Cambio</th></tr>
             </thead>
             <tbody>
+              <!-- track h.id: identidad estable por fila. El pipe date da formato a la fecha. -->
               @for (h of historial(); track h.id) {
                 <tr>
                   <td class="text-nowrap">{{ h.fechaCambio | date: 'yyyy-MM-dd HH:mm' }}</td>
@@ -60,6 +69,7 @@
     </div>
   </section>
 
+  <!-- Compartir con otra empresa (HU-23): solo el ADMINISTRADOR y solo si el proceso está activo. -->
   @if (auth.esAdministrador() && p.activo) {
     <app-compartir-proceso [procesoId]="p.id" />
   }

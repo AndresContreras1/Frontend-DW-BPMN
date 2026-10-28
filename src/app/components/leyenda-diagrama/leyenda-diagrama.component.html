@@ -1,46 +1,57 @@
+<!-- <details>/<summary> es un desplegable nativo de HTML: no necesita JavaScript ni estado. -->
 <details class="mb-3" id="leyendaDiagrama">
   <summary class="fw-semibold">Leyenda de símbolos</summary>
   <ul class="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 mt-2 mb-0 small">
     @for (s of simbolos; track s.id) {
       <li class="col d-flex align-items-center gap-2 mb-1">
+        <!-- Miniatura de 44x30 con su propio viewBox; reutiliza las MISMAS clases CSS (dg-*) del diagrama real para verse igual. aria-hidden: es decorativa, el texto la describe. -->
         <svg width="44" height="30" viewBox="0 0 44 30" aria-hidden="true">
           @switch (s.id) {
             @case ('actividad') {
+              <!-- Rectángulo con esquinas redondeadas (rx=6). -->
               <rect class="dg-actividad" x="2" y="4" width="40" height="22" rx="6" />
             }
             @case ('exclusivo') {
+              <!-- Rombo (4 vértices) + diagonales formando una X. -->
               <polygon class="dg-gateway" points="22,2 40,15 22,28 4,15" />
               <path class="dg-simbolo" d="M 16 9 L 28 21 M 28 9 L 16 21" />
             }
             @case ('paralelo') {
+              <!-- Rombo + cruz "+" (vertical y horizontal). -->
               <polygon class="dg-gateway" points="22,2 40,15 22,28 4,15" />
               <path class="dg-simbolo" d="M 22 8 V 22 M 15 15 H 29" />
             }
             @case ('inclusivo') {
+              <!-- Rombo + círculo central. -->
               <polygon class="dg-gateway" points="22,2 40,15 22,28 4,15" />
               <circle class="dg-simbolo" cx="22" cy="15" r="6" />
             }
             @case ('throw') {
+              <!-- Evento que ENVÍA: círculo + sobre RELLENO (dg-sobre-lleno) + solapa. -->
               <circle class="dg-evento" cx="22" cy="15" r="12" />
               <rect class="dg-sobre dg-sobre-lleno" x="16" y="11" width="12" height="8" />
               <polyline class="dg-sobre-solapa" points="16,11 22,16 28,11" />
             }
             @case ('catchInicio') {
+              <!-- Evento que RECIBE al inicio: círculo de borde sencillo + sobre sin relleno. -->
               <circle class="dg-evento" cx="22" cy="15" r="12" />
               <rect class="dg-sobre" x="16" y="11" width="12" height="8" />
               <polyline class="dg-sobre-solapa" points="16,11 22,16 28,11" />
             }
             @case ('catchIntermedio') {
+              <!-- Evento que RECIBE a mitad del flujo: DOBLE círculo (r=13 y r=10) + sobre sin relleno. -->
               <circle class="dg-evento" cx="22" cy="15" r="13" />
               <circle class="dg-evento" cx="22" cy="15" r="10" />
               <rect class="dg-sobre" x="16" y="11" width="12" height="8" />
               <polyline class="dg-sobre-solapa" points="16,11 22,16 28,11" />
             }
             @case ('arco') {
+              <!-- Flujo de secuencia: línea continua con punta triangular rellena (dibujada a mano como path, sin marker). -->
               <line class="dg-arco" x1="2" y1="15" x2="38" y2="15" />
               <path d="M 33 10 L 42 15 L 33 20 z" fill="#095246" />
             }
             @default {
+              <!-- Flujo de mensaje (caso por defecto): línea punteada (por la clase dg-mensaje) con punta blanca. -->
               <line class="dg-mensaje" x1="2" y1="15" x2="36" y2="15" />
               <path d="M 34 10 L 42 15 L 34 20 z" fill="#fff" stroke="#0f8472" stroke-width="1.4" />
             }

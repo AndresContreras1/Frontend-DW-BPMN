@@ -1,18 +1,23 @@
+<!-- Cabecera con el botón que abre el formulario de creación (nuevo()). -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
   <h1 class="h3 text-primary mb-0">Roles de proceso</h1>
   <button id="btnNuevoRol" type="button" class="btn btn-primary" (click)="nuevo()">Nuevo rol de proceso</button>
 </div>
+<!-- Aclara la diferencia entre rol de proceso (lanes) y rol de acceso (usuarios). -->
 <p class="text-secondary">Son las responsabilidades que nombran las lanes de los diagramas (no son los roles de acceso de los usuarios). Un rol en uso no se puede eliminar.</p>
 
+<!-- Formulario de alta/edición: solo se pinta cuando formularioAbierto() es true. -->
 @if (formularioAbierto()) {
   <section class="card mb-3" aria-labelledby="tituloFormRol">
     <div class="card-body">
       <h2 class="h5" id="tituloFormRol">{{ rolEnEdicion() ? 'Editar rol de proceso' : 'Nuevo rol de proceso' }}</h2>
+      <!-- Componente hijo reutilizable: [rol] precarga datos si se edita, [errores] muestra errores del backend por campo; (guardar)/(cancelar) son sus outputs. -->
       <app-rol-proceso-form [rol]="rolEnEdicion()" [enviando]="enviando()" [errores]="erroresForm()" (guardar)="guardar($event)" (cancelar)="cerrarFormulario()" />
     </div>
   </section>
 }
 
+<!-- Buscador por nombre. (submit) cancela el envío nativo con preventDefault() y llama buscar() para no recargar la página. -->
 <form class="card card-body mb-3" (submit)="$event.preventDefault(); buscar()" aria-label="Buscar roles">
   <div class="row align-items-end">
     <div class="col-12 col-md-9">
@@ -24,10 +29,12 @@
   </div>
 </form>
 
+<!-- Alerta si falló la carga. -->
 @if (error()) {
   <div class="alert alert-danger" role="alert" id="alertaErrorRoles">{{ error() }}</div>
 }
 
+<!-- Estados: spinner -> vacío -> tabla paginada. -->
 @if (cargando()) {
   <app-spinner-carga texto="Cargando roles..." />
 } @else {
@@ -41,11 +48,13 @@
             <tr><th scope="col">Nombre</th><th scope="col">Descripción</th><th scope="col">Uso</th><th scope="col" class="text-end">Acciones</th></tr>
           </thead>
           <tbody>
+            <!-- track r.id: identidad estable por fila. -->
             @for (r of p.content; track r.id) {
               <tr [id]="'filaRol' + r.id">
                 <td class="fw-semibold">{{ r.nombre }}</td>
                 <td>{{ r.descripcion }}</td>
                 <td>
+                  <!-- Columna "Uso": si el rol lo usan lanes de algún proceso se muestran los procesos; si no, "Sin usar". -->
                   @if (r.enUso) {
                     <span class="badge text-bg-warning">En uso</span>
                     <div class="small text-secondary">{{ r.procesos.join(', ') }}</div>
@@ -54,6 +63,7 @@
                   }
                 </td>
                 <td class="text-end text-nowrap">
+                  <!-- Acciones por fila. Editar abre el formulario. Eliminar (botón siguiente) se deshabilita si el rol está en uso (regla de negocio) y su title explica el motivo; [attr.title] pone null para quitar el atributo. -->
                   <button type="button" class="btn btn-sm btn-outline-secondary" [id]="'btnEditarRol' + r.id" (click)="editar(r)">Editar</button>
                   <button
                     type="button"
@@ -69,11 +79,13 @@
           </tbody>
         </table>
       </div>
+      <!-- Paginador: al cambiar de página emite el número y se llama cargar($event). -->
       <app-paginador [pagina]="p.page" [totalPaginas]="p.totalPages" [totalElementos]="p.totalElements" (cambiarPagina)="cargar($event)" />
     }
   }
 }
 
+<!-- Modal de confirmación de eliminación: abierto cuando rolAEliminar() no es null; confirmar ejecuta el DELETE. -->
 <app-modal-confirmacion
   [abierto]="rolAEliminar() !== null"
   titulo="Eliminar rol de proceso"

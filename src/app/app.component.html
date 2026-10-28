@@ -1,6 +1,12 @@
+<!-- Plantilla del componente raíz: estructura fija de todas las páginas (layout). -->
+<!-- Barra de navegación superior (menú según el rol del usuario). -->
 <app-navbar />
+<!-- Contenedor de notificaciones emergentes (toasts) alimentado por NotificacionService. -->
 <app-toasts />
+<!-- Zona de contenido: flex-grow-1 hace que ocupe el espacio sobrante y empuje el footer hacia abajo. -->
 <main class="container py-4 flex-grow-1">
+  <!-- Aquí el router inserta el componente de la ruta activa (login, procesos, editor, etc.). -->
   <router-outlet />
 </main>
+<!-- Pie de página común. -->
 <app-footer />

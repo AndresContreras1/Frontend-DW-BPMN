@@ -1,3 +1,13 @@
+// =====================================================================================
+// gateway-form.component.ts
+// Formulario para crear o editar un GATEWAY BPMN (compuerta). Tipos:
+//   - EXCLUSIVO: se sigue un solo camino según la condición.
+//   - PARALELO: se siguen todos los caminos; no usa condiciones.
+//   - INCLUSIVO: se siguen uno o varios caminos según sus condiciones.
+// Las condiciones NO se escriben aquí: van en los ARCOS salientes (ver arco-form). Si un gateway pasa a PARALELO,
+// el backend borra esas condiciones, y por eso el formulario muestra un aviso previo.
+// Hereda de FormularioElementoBase. La posición es relativa a la lane.
+// =====================================================================================
 import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OpcionLista, TIPOS_GATEWAY, TipoGateway } from '../../models/enums.model';
@@ -18,13 +28,19 @@ import { FormularioElementoBase } from '../formulario-elemento.base';
   templateUrl: './gateway-form.component.html'
 })
 export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse> implements OnInit {
+  /** Servicio HTTP de gateways. */
   private readonly gatewayService = inject(GatewayService);
 
+  /** Modelo del diagrama: lanes disponibles y base para sugerir posición. */
   readonly datos = input.required<DatosDiagrama>();
+  /** Gateway a editar; null = modo crear. */
   readonly gateway = input<GatewayResponse | null>(null);
+  /** Lane preseleccionada al crear. */
   readonly laneInicial = input<number | undefined>(undefined);
+  /** Catálogo de tipos de gateway para el select. */
   readonly tipos = TIPOS_GATEWAY;
 
+  /** Opciones del select de lane con el formato "Rol · Pool". */
   readonly opcionesLanes = computed<OpcionLista[]>(() =>
     this.datos().lanes.map((l) => ({
       valor: String(l.id),
@@ -32,6 +48,7 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
     }))
   );
 
+  /** Formulario reactivo tipado (números como string, validados con pattern de enteros). Tipo por defecto: EXCLUSIVO. */
   readonly form = new FormGroup({
     nombre: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     tipoGateway: new FormControl<string>('EXCLUSIVO', { nonNullable: true, validators: [Validators.required] }),
@@ -46,6 +63,7 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
     return actual !== null && actual.tipoGateway !== 'PARALELO' && this.form.controls.tipoGateway.value === 'PARALELO';
   }
 
+  /** Edición: precarga los campos. Creación: lane inicial (indicada o la primera) y posición libre sugerida. */
   ngOnInit(): void {
     const actual = this.gateway();
     if (actual) {
@@ -65,12 +83,14 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
     }
   }
 
+  /** Al crear, si el usuario cambia la lane se sugiere una nueva posición libre (al editar se respeta la posición actual). */
   alCambiarLane(): void {
     if (!this.gateway()) {
       this.sugerir();
     }
   }
 
+  /** Valida, arma el cuerpo con números convertidos y crea (en la lane elegida) o edita. */
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -88,6 +108,7 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
     this.enviar(actual ? this.gatewayService.editar(actual.id, datos) : this.gatewayService.crear(Number(v.laneId), datos));
   }
 
+  /** Propone una posición libre dentro de la lane elegida y la escribe en el formulario con patchValue. */
   private sugerir(): void {
     const laneId = Number(this.form.controls.laneId.value);
     if (!Number.isNaN(laneId) && laneId > 0) {

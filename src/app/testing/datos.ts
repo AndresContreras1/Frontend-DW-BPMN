@@ -1,5 +1,8 @@
+// Datos de ejemplo compartidos por las pruebas unitarias (fixtures). Se centralizan aquí para
+// que varias specs usen el mismo modelo sin duplicarlo. No se incluyen en la aplicación real.
 import { ProcesoDiagramaResponse, ProcesoResponse } from '../models/proceso.model';
 
+// Proceso mínimo en estado BORRADOR, base para otros objetos de prueba.
 export const procesoBase: ProcesoResponse = {
   id: 7,
   nombre: 'Vacaciones',
@@ -11,6 +14,7 @@ export const procesoBase: ProcesoResponse = {
   fechaModificacion: '2026-01-02T10:00:00'
 };
 
+// Está tipado con ProcesoDiagramaResponse: si el contrato del backend cambia, el compilador marca de inmediato qué fixtures actualizar.
 /** Modelo de ejemplo: un pool de empresa con dos lanes, un gateway, un evento y un pool externo de caja negra. */
 export const diagramaEjemplo: ProcesoDiagramaResponse = {
   proceso: procesoBase,

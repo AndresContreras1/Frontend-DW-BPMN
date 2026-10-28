@@ -1,3 +1,4 @@
+<!-- (change) en el <form>: cualquier cambio de campo burbujea aquí y se recalcula si el tipo es catch (actualizarTipo). -->
 <form [formGroup]="form" (ngSubmit)="guardar()" (change)="actualizarTipo()" novalidate>
   <h3 class="h6">{{ evento() ? 'Editar evento de mensaje' : 'Nuevo evento de mensaje' }}</h3>
   <p class="small text-secondary">El sistema solo modela el mensaje; no lo envía ni lo recibe.</p>
@@ -8,14 +9,18 @@
     <div class="alert alert-warning" role="alert">Primero crea una lane: los eventos viven dentro de una lane.</div>
   }
   <app-campo-formulario idCampo="txtNombreEvento" etiqueta="Nombre" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+  <!-- Tipo: THROW (envía), CATCH_INICIO o CATCH_INTERMEDIO (reciben). -->
   <app-campo-formulario idCampo="selTipoEvento" etiqueta="Tipo de evento" tipo="select" [opciones]="tipos" [control]="form.controls.tipoEvento" />
   <app-campo-formulario idCampo="txtContenidoEvento" etiqueta="Contenido del mensaje" tipo="textarea" ayuda="Datos que viajan en el mensaje, por ejemplo: numeroSolicitud (texto)." [control]="form.controls.contenido" [errorServidor]="erroresServidor()['contenido'] ?? ''" />
+  <!-- Clave de correlación: dato que une el mensaje con su caso (obligatoria). -->
   <app-campo-formulario idCampo="txtClaveEvento" etiqueta="Clave de correlación" ayuda="Dato que identifica a qué caso pertenece el mensaje." [control]="form.controls.claveCorrelacion" [errorServidor]="erroresServidor()['claveCorrelacion'] ?? ''" />
+  <!-- Solo para eventos catch y si existen actividades: casillas para elegir cuáles usan los datos del mensaje. -->
   @if (esCatch() && actividades().length > 0) {
     <fieldset class="mb-3" id="grupoActividadesEvento">
       <legend class="form-label fs-6">Actividades que usan los datos del mensaje</legend>
       @for (a of actividades(); track a.id) {
         <div class="form-check">
+          <!-- Casillas manejadas con signal (no con formControl): [checked] refleja el estado y (change) lo alterna. [id]/[for] enlazan etiqueta e input. -->
           <input class="form-check-input" type="checkbox" [id]="'chkActividadEvento' + a.id" [checked]="actividadIds().includes(a.id)" (change)="alternarActividad(a.id)" />
           <label class="form-check-label" [for]="'chkActividadEvento' + a.id">{{ a.nombre }}</label>
         </div>
@@ -29,6 +34,7 @@
   <div (change)="alCambiarLane()">
     <app-campo-formulario idCampo="selLaneEvento" etiqueta="Lane" ayuda="Cambiarla mueve el evento a otra lane del proceso (sin arcos si es de otro pool)." tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" />
   </div>
+  <!-- Posición relativa a la lane. -->
   <div class="row">
     <div class="col-6">
       <app-campo-formulario idCampo="txtPosicionXEvento" etiqueta="Posición X" [control]="form.controls.posicionX" />

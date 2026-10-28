@@ -1,3 +1,9 @@
+// =====================================================================================
+// editor-flujo.spec.ts
+// Pruebas de los formularios y paneles de FLUJO del editor BPMN: eventos de mensaje, arcos (flujo de secuencia),
+// mensajes entre pools, correlación y advertencias del modelo. Igual que en editor-estructura.spec.ts, los servicios
+// HTTP se sustituyen por 'spies' de Jasmine con TestBed, así que se prueba la lógica del formulario sin red real.
+// =====================================================================================
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
@@ -17,23 +23,30 @@ import { EventoFormComponent } from './evento-form/evento-form.component';
 import { MensajeFormComponent } from './mensaje-form/mensaje-form.component';
 import { PanelAdvertenciasComponent } from './panel-advertencias/panel-advertencias.component';
 
+// Modelo de ejemplo compartido (2 pools: uno con lanes y otro de caja negra; actividades, gateway, evento, arcos y un mensaje).
 const datos = diagramaEjemplo;
+// Fabrica un error 409 con el formato ProblemDetail del backend ({ detail }).
 const e409 = (detail: string) => new HttpErrorResponse({ status: 409, error: { detail } });
 
+// Utilidad pura que une actividades, gateways y eventos en una sola lista de nodos (la usa el formulario de arcos).
 describe('listarNodos', () => {
+  // Devuelve los 4 nodos del ejemplo y a cada uno le asigna el pool de su lane y una etiqueta legible.
   it('incluyeActividadesGatewaysYEventosConSuPool', () => {
     const nodos = listarNodos(datos);
     expect(nodos.length).toBe(4);
     expect(nodos.find((n) => n.id === 102)).toEqual(jasmine.objectContaining({ tipo: 'gateway', poolId: 1, etiqueta: 'Gateway: Aprobada' }));
   });
 
+  // Si la lane de un nodo no existe, el pool por defecto es 0 (valor centinela).
   it('laneSinPool_usaPoolCero', () => {
     const nodos = listarNodos({ ...datos, lanes: [] });
     expect(nodos[0].poolId).toBe(0);
   });
 });
 
+// Panel de advertencias: solo muestra lo que valida el backend, en sus tres estados (válido, con advertencias, cargando).
 describe('PanelAdvertenciasComponent', () => {
+  // Renderiza el panel con la validación indicada y devuelve el elemento HTML para consultarlo.
   function crear(validacion: ValidacionModeloResponse | null) {
     const fixture = TestBed.createComponent(PanelAdvertenciasComponent);
     fixture.componentRef.setInput('validacion', validacion);
@@ -41,21 +54,25 @@ describe('PanelAdvertenciasComponent', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
+  // Con valido = true aparece el texto de que no hay advertencias.
   it('modeloValido_avisaQueSePuedePublicar', () => {
     expect(crear({ valido: true, advertencias: [] }).querySelector('#txtSinAdvertencias')).not.toBeNull();
   });
 
+  // Con valido = false se lista cada advertencia textual del backend (aquí, 2 elementos).
   it('modeloConAdvertencias_lasListaTalComoLasDaElBackend', () => {
     const el = crear({ valido: false, advertencias: ['El gateway "Aprobada" debe tener al menos dos salidas.', 'Mensaje sin correlación.'] });
     expect(el.querySelectorAll('#listaAdvertenciasModelo li').length).toBe(2);
     expect(el.textContent).toContain('al menos dos salidas');
   });
 
+  // Con validación null (aún no responde el backend) se muestra 'Validando'.
   it('sinRespuestaTodavia_muestraQueEstaValidando', () => {
     expect(crear(null).textContent).toContain('Validando');
   });
 });
 
+// Formulario de evento de mensaje: THROW envía; CATCH_INICIO y CATCH_INTERMEDIO reciben. La clave de correlación es obligatoria.
 describe('EventoFormComponent', () => {
   let servicio: jasmine.SpyObj<EventoMensajeService>;
   const evento: EventoMensajeResponse = datos.eventos[0];
@@ -65,6 +82,7 @@ describe('EventoFormComponent', () => {
     TestBed.configureTestingModule({ providers: [{ provide: EventoMensajeService, useValue: servicio }] });
   });
 
+  // Crea el formulario con datos, evento a editar (o null) y lane inicial opcional, y lo renderiza.
   function crear(actual: EventoMensajeResponse | null = null, laneInicial?: number) {
     const fixture = TestBed.createComponent(EventoFormComponent);
     fixture.componentRef.setInput('datos', datos);
@@ -74,6 +92,7 @@ describe('EventoFormComponent', () => {
     return fixture;
   }
 
+  // Al crear en la lane 10 se envía tipo, clave de correlación y la posición sugerida (240); origenExterno queda false por defecto.
   it('crear_enviaTipoClaveYPosicionSugerida', () => {
     servicio.crear.and.returnValue(of(evento));
     const fixture = crear(null, 10);
@@ -83,6 +102,7 @@ describe('EventoFormComponent', () => {
     expect(servicio.crear).toHaveBeenCalledWith(10, jasmine.objectContaining({ tipoEvento: 'CATCH_INICIO', claveCorrelacion: 'k', posicionX: 240, origenExterno: false }));
   });
 
+  // Al editar, la lane sigue habilitada (se puede mover el evento de lane) y un THROW no envía actividadIds (undefined).
   it('editar_permiteMoverDeLaneYEnviaElLaneId', () => {
     servicio.editar.and.returnValue(of(evento));
     const fixture = crear(evento);
@@ -93,6 +113,7 @@ describe('EventoFormComponent', () => {
     expect(servicio.editar).toHaveBeenCalledWith(103, jasmine.objectContaining({ nombre: 'NotificarPago', laneId: 10, actividadIds: undefined }));
   });
 
+  // Un CATCH permite marcar actividades que usan los datos del mensaje (alternar dos veces la 101 la deja desmarcada). Al volver a THROW la lista se vacía.
   it('catch_indicaLasActividadesQueUsanLosDatosDelMensaje', () => {
     servicio.crear.and.returnValue(of(evento));
     const fixture = crear(null, 10);
@@ -111,12 +132,14 @@ describe('EventoFormComponent', () => {
     expect(c.actividadIds()).toEqual([]);
   });
 
+  // Al editar un CATCH ya existente se precargan sus actividades asociadas y se activa el modo catch.
   it('editarCatch_precargaLasActividadesDelBackend', () => {
     const fixture = crear({ ...evento, tipoEvento: 'CATCH_INICIO', actividadIds: [101] });
     expect(fixture.componentInstance.actividadIds()).toEqual([101]);
     expect(fixture.componentInstance.esCatch()).toBeTrue();
   });
 
+  // Sin clave de correlación el formulario es inválido y no se llama al backend.
   it('sinClaveDeCorrelacion_noSeEnvia', () => {
     const fixture = crear(null, 10);
     fixture.componentInstance.form.patchValue({ nombre: 'X', contenido: 'c' });
@@ -125,6 +148,7 @@ describe('EventoFormComponent', () => {
     expect(fixture.componentInstance.form.controls.claveCorrelacion.invalid).toBeTrue();
   });
 
+  // Un error 409 del backend (nombre duplicado) queda en la señal 'error'.
   it('errorDelBackend_seMuestra', () => {
     servicio.crear.and.returnValue(throwError(() => e409('Nombre duplicado.')));
     const fixture = crear(null, 10);
@@ -134,6 +158,7 @@ describe('EventoFormComponent', () => {
   });
 });
 
+// Formulario de arco (flujo de secuencia). Reglas: origen y destino distintos y del mismo pool; condición solo si sale de un gateway no paralelo, y obligatoria si diverge.
 describe('ArcoFormComponent', () => {
   let servicio: jasmine.SpyObj<ArcoService>;
   const arco: ArcoResponse = datos.arcos[2];
@@ -143,6 +168,7 @@ describe('ArcoFormComponent', () => {
     TestBed.configureTestingModule({ providers: [{ provide: ArcoService, useValue: servicio }] });
   });
 
+  // Crea el formulario con los datos de ejemplo y un arco opcional a editar.
   function crear(actual: ArcoResponse | null = null) {
     const fixture = TestBed.createComponent(ArcoFormComponent);
     fixture.componentRef.setInput('datos', datos);
@@ -151,6 +177,7 @@ describe('ArcoFormComponent', () => {
     return fixture;
   }
 
+  // Con origen 100, la lista de destinos no incluye al propio 100 pero sí al 101 (mismo pool).
   it('destino_noOfreceElMismoNodoDelOrigenNiNodosDeOtroPool', () => {
     const fixture = crear();
     fixture.componentInstance.form.patchValue({ origenId: '100' });
@@ -160,6 +187,7 @@ describe('ArcoFormComponent', () => {
     expect(destinos).toContain('101');
   });
 
+  // Si al cambiar el origen el destino elegido deja de ser válido, se limpia; y un origen vacío deja el signal en null.
   it('alCambiarElOrigen_quitaUnDestinoQueYaNoEsValido', () => {
     const fixture = crear();
     fixture.componentInstance.form.patchValue({ origenId: '100', destinoId: '101' });
@@ -172,6 +200,7 @@ describe('ArcoFormComponent', () => {
     expect(fixture.componentInstance.origenId()).toBeNull();
   });
 
+  // Desde una actividad (100) no se pide condición y se muestra el aviso; desde el gateway (102) sí aparece el campo de condición.
   it('condicion_soloSePideCuandoSaleDeUnGatewayNoParalelo', () => {
     const fixture = crear();
     fixture.componentInstance.form.patchValue({ origenId: '100' });
@@ -186,6 +215,7 @@ describe('ArcoFormComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#txtCondicionArco')).not.toBeNull();
   });
 
+  // Gateway que diverge (menos de 2 arcos entrantes) = condición obligatoria y el formulario no deja guardar. Si converge (2 o más entrantes) la condición es opcional.
   it('condicion_esObligatoriaSoloSiElGatewayDiverge', () => {
     const fixture = crear();
     const c = fixture.componentInstance;
@@ -204,6 +234,7 @@ describe('ArcoFormComponent', () => {
     expect(convergente.componentInstance.form.controls.condicion.valid).toBeTrue();
   });
 
+  // Desde un gateway la condición viaja recortada (trim) junto con la etiqueta.
   it('crear_conGatewayEnviaLaCondicion', () => {
     servicio.crear.and.returnValue(of(arco));
     const fixture = crear();
@@ -214,6 +245,7 @@ describe('ArcoFormComponent', () => {
     expect(servicio.crear).toHaveBeenCalledWith({ origenId: 102, destinoId: 103, etiqueta: 'Sí', condicion: 'x > 1' });
   });
 
+  // Desde un nodo que no es gateway la condición se ignora aunque se haya escrito: se envía undefined.
   it('crear_sinGateway_noEnviaCondicion', () => {
     servicio.crear.and.returnValue(of(arco));
     const fixture = crear();
@@ -224,6 +256,7 @@ describe('ArcoFormComponent', () => {
     expect(servicio.crear).toHaveBeenCalledWith({ origenId: 100, destinoId: 101, etiqueta: undefined, condicion: undefined });
   });
 
+  // Al editar un arco que sale del gateway se precarga y se llama a editar(id, ...).
   it('editar_precargaYUsaPut', () => {
     servicio.editar.and.returnValue(of(arco));
     const fixture = crear(arco);
@@ -232,6 +265,7 @@ describe('ArcoFormComponent', () => {
     expect(servicio.editar).toHaveBeenCalledWith(202, jasmine.objectContaining({ origenId: 102, destinoId: 103 }));
   });
 
+  // Sin origen/destino no se llama al backend; si ya existe un arco igual, el 409 se muestra al usuario.
   it('formularioInvalidoYErrorDelBackend_duplicado', () => {
     servicio.crear.and.returnValue(throwError(() => e409('Ya existe un arco entre esos nodos.')));
     const fixture = crear();
@@ -243,6 +277,7 @@ describe('ArcoFormComponent', () => {
   });
 });
 
+// Formulario de mensaje entre pools: THROW emisor, CATCH receptor o destino externo, correlación y políticas.
 describe('MensajeFormComponent', () => {
   let servicio: jasmine.SpyObj<MensajeService>;
   const mensaje: MensajeResponse = datos.mensajes[0];
@@ -252,6 +287,7 @@ describe('MensajeFormComponent', () => {
     TestBed.configureTestingModule({ providers: [{ provide: MensajeService, useValue: servicio }] });
   });
 
+  // Crea el formulario para el proceso 7 con los datos de ejemplo y un mensaje opcional a editar.
   function crear(actual: MensajeResponse | null = null) {
     const fixture = TestBed.createComponent(MensajeFormComponent);
     fixture.componentRef.setInput('procesoId', 7);
@@ -261,6 +297,7 @@ describe('MensajeFormComponent', () => {
     return fixture;
   }
 
+  // Se proponen origen (pool 1) y destino (pool 2); al elegir el THROW 103 el nombre del mensaje se copia del evento (el backend exige que coincidan).
   it('crear_proponeLosPoolsYElNombreDelEventoThrow', () => {
     const fixture = crear();
     const c = fixture.componentInstance;
@@ -272,6 +309,7 @@ describe('MensajeFormComponent', () => {
     expect(c.form.controls.nombre.value).toBe('NotificarPago');
   });
 
+  // Contrato completo: destino externo (cola), política de fallo 'derivar a actividad de error' con su actividad, política sin caso y pools/THROW. Se marca el nombre como 'dirty' para que no se sobrescriba con el del evento.
   it('crear_conDestinoExternoYActividadDeError_enviaTodoElContrato', () => {
     servicio.crear.and.returnValue(of(mensaje));
     const fixture = crear();
@@ -293,6 +331,7 @@ describe('MensajeFormComponent', () => {
     });
   });
 
+  // La actividad de error solo viaja si la política es derivar; con otra política (CONTINUAR_FLUJO) se envía undefined.
   it('actividadDeError_soloSeEnviaSiLaPoliticaEsDerivar', () => {
     servicio.crear.and.returnValue(of(mensaje));
     const fixture = crear();
@@ -303,6 +342,7 @@ describe('MensajeFormComponent', () => {
     expect(servicio.crear.calls.mostRecent().args[1].actividadErrorId).toBeUndefined();
   });
 
+  // Si se cambia el pool de origen, el THROW que ya no pertenece a él se limpia; igual con el CATCH respecto al pool destino.
   it('cambiarElPoolDeOrigen_quitaUnEventoThrowQueYaNoPertenece', () => {
     const fixture = crear();
     const c = fixture.componentInstance;
@@ -316,6 +356,7 @@ describe('MensajeFormComponent', () => {
     expect(c.form.controls.eventoCatchId.value).toBe('');
   });
 
+  // Al editar, pools de origen y THROW quedan deshabilitados (no cambian tras crear) y se llama a editar(300, ...).
   it('editar_precargaDeshabilitaPoolsYThrowYUsaPut', () => {
     servicio.editar.and.returnValue(of(mensaje));
     const fixture = crear(mensaje);
@@ -327,6 +368,7 @@ describe('MensajeFormComponent', () => {
     expect(servicio.editar).toHaveBeenCalledWith(300, jasmine.objectContaining({ nombre: 'Orden de pago', tipoDestinoExterno: 'SERVICIO_WEB' }));
   });
 
+  // Sin nombre/contenido no se llama al backend; si el backend rechaza (nombre no coincide con el del evento), el detalle se muestra.
   it('formularioInvalidoYError422_seMuestra', () => {
     servicio.crear.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409, error: { detail: 'El nombre del evento de mensaje debe coincidir con el mensaje.' } })));
     const fixture = crear();
@@ -338,6 +380,7 @@ describe('MensajeFormComponent', () => {
   });
 });
 
+// Correlación del mensaje: criterio (dato que une el mensaje con su caso). Es obligatoria para publicar. Se consulta, define (PUT) y elimina.
 describe('CorrelacionFormComponent', () => {
   let servicio: jasmine.SpyObj<MensajeService>;
   const correlacion: CorrelacionResponse = { id: 1, criterio: 'idSolicitud', mensajeId: 300 };
@@ -347,6 +390,7 @@ describe('CorrelacionFormComponent', () => {
     TestBed.configureTestingModule({ providers: [{ provide: MensajeService, useValue: servicio }] });
   });
 
+  // Crea el componente para el mensaje 300; 'puedeEditar' controla si se muestra el formulario.
   function crear(puedeEditar = true) {
     const fixture = TestBed.createComponent(CorrelacionFormComponent);
     fixture.componentRef.setInput('mensajeId', 300);
@@ -355,6 +399,7 @@ describe('CorrelacionFormComponent', () => {
     return fixture;
   }
 
+  // Si el backend devuelve una correlación se muestra su criterio y el botón Quitar.
   it('conCorrelacion_muestraElCriterioActual', () => {
     servicio.obtenerCorrelacion.and.returnValue(of(correlacion));
     const fixture = crear();
@@ -362,12 +407,14 @@ describe('CorrelacionFormComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#btnQuitarCorrelacion')).not.toBeNull();
   });
 
+  // Un 404 significa 'sin correlación todavía': se avisa que es obligatoria para publicar.
   it('sinCorrelacion404_avisaQueEsObligatoriaParaPublicar', () => {
     servicio.obtenerCorrelacion.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     const fixture = crear();
     expect((fixture.nativeElement as HTMLElement).querySelector('#txtSinCorrelacion')?.textContent).toContain('obligatoria para publicar');
   });
 
+  // Guardar envía el criterio recortado (trim) con definirCorrelacion y actualiza el estado local.
   it('guardar_defineElCriterioConPut', () => {
     servicio.obtenerCorrelacion.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     servicio.definirCorrelacion.and.returnValue(of(correlacion));
@@ -378,6 +425,7 @@ describe('CorrelacionFormComponent', () => {
     expect(fixture.componentInstance.correlacion()).toEqual(correlacion);
   });
 
+  // Con el criterio vacío no se llama al backend.
   it('guardar_sinCriterio_noLlamaAlBackend', () => {
     servicio.obtenerCorrelacion.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     const fixture = crear();
@@ -385,6 +433,7 @@ describe('CorrelacionFormComponent', () => {
     expect(servicio.definirCorrelacion).not.toHaveBeenCalled();
   });
 
+  // Un error del backend al guardar se muestra en 'error'.
   it('guardar_error_muestraElDetalle', () => {
     servicio.obtenerCorrelacion.and.returnValue(of(correlacion));
     servicio.definirCorrelacion.and.returnValue(throwError(() => e409('Criterio inválido.')));
@@ -393,6 +442,7 @@ describe('CorrelacionFormComponent', () => {
     expect(fixture.componentInstance.error()).toBe('Criterio inválido.');
   });
 
+  // Quitar elimina la correlación y deja el estado en null; el aviso emergente se espía (spyOn) para no mostrarlo de verdad.
   it('quitar_eliminaLaCorrelacionConfirmadaPorElBackend', () => {
     servicio.obtenerCorrelacion.and.returnValue(of(correlacion));
     servicio.eliminarCorrelacion.and.returnValue(of(undefined));
@@ -402,6 +452,7 @@ describe('CorrelacionFormComponent', () => {
     expect(fixture.componentInstance.correlacion()).toBeNull();
   });
 
+  // Si quitar falla, se muestra el error y la correlación se conserva.
   it('quitar_error_muestraElDetalle', () => {
     servicio.obtenerCorrelacion.and.returnValue(of(correlacion));
     servicio.eliminarCorrelacion.and.returnValue(throwError(() => e409('No se puede quitar.')));
@@ -411,6 +462,7 @@ describe('CorrelacionFormComponent', () => {
     expect(fixture.componentInstance.correlacion()).not.toBeNull();
   });
 
+  // Sin permiso de edición no aparece el botón de guardar.
   it('soloLectura_noMuestraElFormulario', () => {
     servicio.obtenerCorrelacion.and.returnValue(of(correlacion));
     const fixture = crear(false);
