@@ -1,0 +1,29 @@
+<section class="card" aria-labelledby="tituloCompartir">
+  <div class="card-body">
+    <h2 class="h5" id="tituloCompartir">Compartir con otra empresa</h2>
+    <p class="small text-secondary">La otra empresa verá el proceso en modo solo lectura. Escribe el identificador de la empresa invitada.</p>
+    @if (error()) {
+      <div class="alert alert-danger" role="alert" id="alertaErrorCompartir">{{ error() }}</div>
+    }
+    <form class="row align-items-start" (ngSubmit)="compartir()" novalidate>
+      <div class="col-12 col-sm-8">
+        <app-campo-formulario idCampo="txtEmpresaInvitada" etiqueta="Identificador de la empresa" [control]="empresaId" />
+      </div>
+      <div class="col-12 col-sm-4 pt-sm-4 mt-sm-2">
+        <button id="btnCompartir" type="submit" class="btn btn-primary w-100" [disabled]="!empresaId.valid">Compartir</button>
+      </div>
+    </form>
+    @if (compartidos().length === 0) {
+      <p class="small text-secondary mb-0">Este proceso no está compartido.</p>
+    } @else {
+      <ul class="list-group" id="listaCompartidos">
+        @for (c of compartidos(); track c.id) {
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ c.empresaInvitada }} <span class="badge text-bg-info">Solo lectura</span></span>
+            <button type="button" class="btn btn-sm btn-outline-danger" [id]="'btnDejarCompartir' + c.id" (click)="dejarDeCompartir(c)">Dejar de compartir</button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>

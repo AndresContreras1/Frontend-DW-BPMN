@@ -1,0 +1,21 @@
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando proceso compartido..." />
+} @else if (error()) {
+  <div class="alert alert-danger" role="alert" id="alertaErrorCompartido">{{ error() }}</div>
+  <a id="lnkVolverCompartidos" class="btn btn-outline-primary" [routerLink]="['/compartidos']">Volver a compartidos</a>
+} @else {
+  @if (detalle(); as d) {
+  <h1 class="h3 text-primary mb-1" id="tituloCompartido">{{ d.proceso.nombre }}</h1>
+  <p class="text-secondary mb-2">{{ d.proceso.descripcion }}</p>
+  <p>
+    Propietaria: <strong>{{ d.empresaPropietaria }}</strong>
+    <span class="badge text-bg-info ms-2" id="badgeSoloLectura">Solo lectura</span>
+  </p>
+  <section class="card" aria-labelledby="tituloModeloCompartido">
+    <div class="card-body">
+      <h2 class="h5" id="tituloModeloCompartido">Modelo del proceso</h2>
+      <app-resumen-diagrama [diagrama]="d" />
+    </div>
+  </section>
+  }
+}
