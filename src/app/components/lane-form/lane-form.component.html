@@ -1,0 +1,15 @@
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h3 class="h6">{{ lane() ? 'Editar lane' : 'Nueva lane' }}</h3>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorLane">{{ error() }}</div>
+  }
+  @if (roles().length === 0) {
+    <div class="alert alert-warning" role="alert">No hay roles de proceso. Crea uno en la sección Roles de proceso para poder nombrar la lane.</div>
+  }
+  <app-campo-formulario idCampo="txtNombreLane" etiqueta="Nombre de la lane" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="selRolProceso" etiqueta="Rol de proceso (responsable)" tipo="select" [opciones]="opcionesRoles()" [control]="form.controls.rolProcesoId" [errorServidor]="erroresServidor()['rolProcesoId'] ?? ''" />
+  <div class="d-flex gap-2">
+    <button id="btnGuardarLane" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ lane() ? 'Guardar cambios' : 'Crear lane' }}</button>
+    <button id="btnCancelarLane" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>
