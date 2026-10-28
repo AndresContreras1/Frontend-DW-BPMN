@@ -1,0 +1,10 @@
+<div class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+  @for (n of notificaciones.notificaciones(); track n.id) {
+    <div class="toast show align-items-center border-0 mb-2" [class]="'toast show align-items-center border-0 mb-2 text-bg-' + n.tipo" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">{{ n.mensaje }}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Cerrar aviso" (click)="notificaciones.cerrar(n.id)"></button>
+      </div>
+    </div>
+  }
+</div>

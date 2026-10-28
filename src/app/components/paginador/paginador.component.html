@@ -1,0 +1,18 @@
+@if (totalPaginas() > 1) {
+  <nav aria-label="Paginación" class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
+    <span class="small text-secondary" id="txtTotalElementos">{{ totalElementos() }} resultados · página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+    <ul class="pagination mb-0 flex-wrap">
+      <li class="page-item" [class.disabled]="!hayAnterior()">
+        <button id="btnPaginaAnterior" type="button" class="page-link" [disabled]="!hayAnterior()" (click)="ir(pagina() - 1)">Anterior</button>
+      </li>
+      @for (p of paginas(); track p) {
+        <li class="page-item" [class.active]="p === pagina()">
+          <button type="button" class="page-link" [id]="'btnPagina' + (p + 1)" [attr.aria-current]="p === pagina() ? 'page' : null" (click)="ir(p)">{{ p + 1 }}</button>
+        </li>
+      }
+      <li class="page-item" [class.disabled]="!haySiguiente()">
+        <button id="btnPaginaSiguiente" type="button" class="page-link" [disabled]="!haySiguiente()" (click)="ir(pagina() + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+}

@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NavbarComponent } from './navbar.component';
@@ -6,7 +8,7 @@ describe('NavbarComponent', () => {
   let fixture: ComponentFixture<NavbarComponent>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [NavbarComponent], providers: [provideRouter([])] });
+    TestBed.configureTestingModule({ imports: [NavbarComponent], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
     fixture = TestBed.createComponent(NavbarComponent);
     fixture.detectChanges();
   });

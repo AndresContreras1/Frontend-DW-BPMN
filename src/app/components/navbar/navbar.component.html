@@ -15,9 +15,43 @@
     </button>
     <div class="collapse navbar-collapse" id="menuPrincipal">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" [routerLink]="['/']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
-        </li>
+        @if (auth.autenticado()) {
+          <li class="nav-item">
+            <a id="lnkProcesos" class="nav-link" [routerLink]="['/procesos']" routerLinkActive="active">Procesos</a>
+          </li>
+          <li class="nav-item">
+            <a id="lnkCompartidos" class="nav-link" [routerLink]="['/compartidos']" routerLinkActive="active">Compartidos conmigo</a>
+          </li>
+          @if (auth.esAdministrador()) {
+            <li class="nav-item">
+              <a id="lnkRoles" class="nav-link" [routerLink]="['/roles']" routerLinkActive="active">Roles de proceso</a>
+            </li>
+            <li class="nav-item">
+              <a id="lnkUsuarios" class="nav-link" [routerLink]="['/usuarios']" routerLinkActive="active">Usuarios</a>
+            </li>
+            <li class="nav-item">
+              <a id="lnkPermisos" class="nav-link" [routerLink]="['/permisos']" routerLinkActive="active">Permisos</a>
+            </li>
+          }
+        }
+      </ul>
+      <ul class="navbar-nav align-items-lg-center gap-lg-2">
+        @if (auth.usuario(); as usuario) {
+          <li class="nav-item text-light small" id="txtUsuarioActual">
+            {{ usuario.nombre }}
+            <span class="badge text-bg-light ms-1" id="txtRolAcceso">{{ etiquetaRol() }}</span>
+          </li>
+          <li class="nav-item">
+            <button id="btnCerrarSesion" type="button" class="btn btn-sm btn-outline-light" (click)="cerrarSesion()">Cerrar sesión</button>
+          </li>
+        } @else {
+          <li class="nav-item">
+            <a id="lnkLogin" class="nav-link" [routerLink]="['/login']" routerLinkActive="active">Iniciar sesión</a>
+          </li>
+          <li class="nav-item">
+            <a id="lnkRegistro" class="btn btn-sm btn-light" [routerLink]="['/registro']">Registrar empresa</a>
+          </li>
+        }
       </ul>
     </div>
   </div>

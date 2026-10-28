@@ -1,0 +1,31 @@
+<div class="mb-3">
+  <label [for]="idCampo()" class="form-label">{{ etiqueta() }}</label>
+  @switch (tipo()) {
+    @case ('textarea') {
+      <textarea [id]="idCampo()" class="form-control" rows="3" [formControl]="control()" [placeholder]="placeholder()"
+        [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid"></textarea>
+    }
+    @case ('select') {
+      <select [id]="idCampo()" class="form-select" [formControl]="control()"
+        [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid">
+        @for (o of opciones(); track o.valor) {
+          <option [value]="o.valor">{{ o.etiqueta }}</option>
+        }
+      </select>
+    }
+    @default {
+      <input [id]="idCampo()" class="form-control" [type]="tipo()" [formControl]="control()" [placeholder]="placeholder()"
+        [class.is-invalid]="mostrarError()" [class.is-valid]="control().touched && control().valid" />
+    }
+  }
+  @if (ayuda()) {
+    <div class="form-text">{{ ayuda() }}</div>
+  }
+  @if (mostrarError()) {
+    <div class="invalid-feedback d-block" [id]="idCampo() + 'Error'">
+      @for (m of mensajes(); track m) {
+        <div>{{ m }}</div>
+      }
+    </div>
+  }
+</div>
