@@ -1,0 +1,27 @@
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h3 class="h6">{{ actividad() ? 'Editar actividad' : 'Nueva actividad' }}</h3>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorActividad">{{ error() }}</div>
+  }
+  @if (opcionesLanes().length === 0) {
+    <div class="alert alert-warning" role="alert">Primero crea una lane: las actividades viven dentro de una lane.</div>
+  }
+  <app-campo-formulario idCampo="txtNombreActividad" etiqueta="Nombre (único en el proceso)" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="txtDescripcionActividad" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" />
+  <app-campo-formulario idCampo="selTipoActividad" etiqueta="Tipo de actividad" tipo="select" [opciones]="tipos" [control]="form.controls.tipoActividad" />
+  <div (change)="alCambiarLane()">
+    <app-campo-formulario idCampo="selLaneActividad" etiqueta="Lane (responsable)" tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" [errorServidor]="erroresServidor()['laneId'] ?? ''" />
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <app-campo-formulario idCampo="txtPosicionXActividad" etiqueta="Posición X" [control]="form.controls.posicionX" />
+    </div>
+    <div class="col-6">
+      <app-campo-formulario idCampo="txtPosicionYActividad" etiqueta="Posición Y" [control]="form.controls.posicionY" />
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button id="btnGuardarActividad" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ actividad() ? 'Guardar cambios' : 'Crear actividad' }}</button>
+    <button id="btnCancelarActividad" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>

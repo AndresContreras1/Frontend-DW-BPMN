@@ -1,0 +1,29 @@
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h3 class="h6">{{ gateway() ? 'Editar gateway' : 'Nuevo gateway' }}</h3>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorGateway">{{ error() }}</div>
+  }
+  @if (opcionesLanes().length === 0) {
+    <div class="alert alert-warning" role="alert">Primero crea una lane: los gateways viven dentro de una lane.</div>
+  }
+  <app-campo-formulario idCampo="txtNombreGateway" etiqueta="Nombre" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="selTipoGateway" etiqueta="Tipo de gateway" tipo="select" [opciones]="tipos" [control]="form.controls.tipoGateway" />
+  @if (avisaLimpiezaDeCondiciones()) {
+    <div class="alert alert-warning small" role="alert" id="avisoParalelo">Al pasar a paralelo se eliminarán las condiciones de sus arcos salientes.</div>
+  }
+  <div (change)="alCambiarLane()">
+    <app-campo-formulario idCampo="selLaneGateway" etiqueta="Lane" tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" />
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <app-campo-formulario idCampo="txtPosicionXGateway" etiqueta="Posición X" [control]="form.controls.posicionX" />
+    </div>
+    <div class="col-6">
+      <app-campo-formulario idCampo="txtPosicionYGateway" etiqueta="Posición Y" [control]="form.controls.posicionY" />
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button id="btnGuardarGateway" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ gateway() ? 'Guardar cambios' : 'Crear gateway' }}</button>
+    <button id="btnCancelarGateway" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>
