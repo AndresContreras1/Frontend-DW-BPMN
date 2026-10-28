@@ -2,9 +2,9 @@ import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActividadResponse } from '../../models/actividad.model';
 import { OpcionLista, TIPOS_ACTIVIDAD, TipoActividad } from '../../models/enums.model';
-import { LaneResponse } from '../../models/lane.model';
+
 import { ActividadService } from '../../service/actividad.service';
-import { DatosDiagrama } from '../../utils/diagrama-layout';
+import { DatosDiagrama, LaneDatos } from '../../utils/diagrama-layout';
 import { sugerirPosicion } from '../../utils/posicion';
 import { CampoFormularioComponent } from '../campo-formulario/campo-formulario.component';
 import { FormularioElementoBase } from '../formulario-elemento.base';
@@ -27,7 +27,7 @@ export class ActividadFormComponent extends FormularioElementoBase<ActividadResp
   readonly tipos = TIPOS_ACTIVIDAD;
 
   readonly opcionesLanes = computed<OpcionLista[]>(() => {
-    const lanes: LaneResponse[] = this.datos().lanes;
+    const lanes: LaneDatos[] = this.datos().lanes;
     return lanes.map((l) => {
       const pool = this.datos().pools.find((p) => p.id === l.poolId);
       return { valor: String(l.id), etiqueta: l.rolProcesoNombre + ' · ' + (pool?.nombre ?? '') };

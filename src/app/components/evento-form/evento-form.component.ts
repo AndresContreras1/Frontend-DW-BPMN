@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnInit } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OpcionLista, TIPOS_EVENTO_MENSAJE, TipoEventoMensaje } from '../../models/enums.model';
 import { EventoMensajeResponse } from '../../models/evento-mensaje.model';
@@ -33,6 +33,13 @@ export class EventoFormComponent extends FormularioElementoBase<EventoMensajeRes
     }))
   );
 
+  readonly actividadIds = signal<number[]>([]);
+  readonly esCatch = signal(false);
+
+  readonly actividades = computed(() =>
+    this.datos().actividades.map((a) => ({ id: a.id, nombre: a.nombre }))
+  );
+
   readonly form = new FormGroup({
     nombre: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     tipoEvento: new FormControl<string>('THROW', { nonNullable: true, validators: [Validators.required] }),
@@ -57,7 +64,8 @@ export class EventoFormComponent extends FormularioElementoBase<EventoMensajeRes
         posicionX: String(actual.posicionX),
         posicionY: String(actual.posicionY)
       });
-      this.form.controls.laneId.disable();
+      this.actividadIds.set(actual.actividadIds ?? []);
+      this.actualizarTipo();
       return;
     }
     const laneId = this.laneInicial() ?? this.datos().lanes[0]?.id;
@@ -65,6 +73,18 @@ export class EventoFormComponent extends FormularioElementoBase<EventoMensajeRes
       this.form.controls.laneId.setValue(String(laneId));
       this.sugerir();
     }
+  }
+
+  /** Solo un Message Catch puede indicar las actividades que usan los datos del mensaje. */
+  actualizarTipo(): void {
+    this.esCatch.set(this.form.controls.tipoEvento.value !== 'THROW');
+    if (!this.esCatch()) {
+      this.actividadIds.set([]);
+    }
+  }
+
+  alternarActividad(id: number): void {
+    this.actividadIds.update((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   }
 
   alCambiarLane(): void {
@@ -86,7 +106,9 @@ export class EventoFormComponent extends FormularioElementoBase<EventoMensajeRes
       claveCorrelacion: v.claveCorrelacion.trim(),
       origenExterno: v.origenExterno,
       posicionX: Number(v.posicionX),
-      posicionY: Number(v.posicionY)
+      posicionY: Number(v.posicionY),
+      laneId: Number(v.laneId),
+      actividadIds: this.esCatch() ? this.actividadIds() : undefined
     };
     const actual = this.evento();
     this.enviar(actual ? this.eventoService.editar(actual.id, datos) : this.eventoService.crear(Number(v.laneId), datos));

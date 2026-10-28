@@ -42,6 +42,15 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
     return gateway !== undefined && gateway.tipoGateway !== 'PARALELO';
   });
 
+  /** El backend exige condición en los arcos que salen de un gateway exclusivo o inclusivo que diverge (menos de 2 arcos entrantes). */
+  readonly condicionObligatoria = computed(() => {
+    const gateway = this.datos().gateways.find((g) => g.id === this.origenId());
+    if (!gateway || gateway.tipoGateway === 'PARALELO') {
+      return false;
+    }
+    return this.datos().arcos.filter((a) => a.destinoId === gateway.id).length < 2;
+  });
+
   readonly form = new FormGroup({
     origenId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     destinoId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -59,16 +68,24 @@ export class ArcoFormComponent extends FormularioElementoBase<ArcoResponse> impl
         condicion: actual.condicion ?? ''
       });
       this.origenId.set(actual.origenId);
+      this.ajustarValidadores();
     }
   }
 
   alCambiarOrigen(): void {
     const id = Number(this.form.controls.origenId.value);
     this.origenId.set(Number.isNaN(id) || id === 0 ? null : id);
+    this.ajustarValidadores();
     const destino = this.form.controls.destinoId.value;
     if (destino && !this.opcionesDestino().some((o) => o.valor === destino)) {
       this.form.controls.destinoId.setValue('');
     }
+  }
+
+  private ajustarValidadores(): void {
+    const condicion = this.form.controls.condicion;
+    condicion.setValidators(this.condicionObligatoria() ? [Validators.required] : []);
+    condicion.updateValueAndValidity();
   }
 
   guardar(): void {

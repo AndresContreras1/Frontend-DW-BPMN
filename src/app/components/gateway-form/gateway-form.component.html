@@ -12,7 +12,7 @@
     <div class="alert alert-warning small" role="alert" id="avisoParalelo">Al pasar a paralelo se eliminarán las condiciones de sus arcos salientes.</div>
   }
   <div (change)="alCambiarLane()">
-    <app-campo-formulario idCampo="selLaneGateway" etiqueta="Lane" tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" />
+    <app-campo-formulario idCampo="selLaneGateway" etiqueta="Lane" ayuda="Cambiarla mueve el gateway a otra lane del proceso (sin arcos si es de otro pool)." tipo="select" [opciones]="opcionesLanes()" [control]="form.controls.laneId" />
   </div>
   <div class="row">
     <div class="col-6">

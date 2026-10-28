@@ -56,7 +56,6 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
         posicionX: String(actual.posicionX),
         posicionY: String(actual.posicionY)
       });
-      this.form.controls.laneId.disable();
       return;
     }
     const laneId = this.laneInicial() ?? this.datos().lanes[0]?.id;
@@ -82,7 +81,8 @@ export class GatewayFormComponent extends FormularioElementoBase<GatewayResponse
       nombre: v.nombre.trim(),
       tipoGateway: v.tipoGateway as TipoGateway,
       posicionX: Number(v.posicionX),
-      posicionY: Number(v.posicionY)
+      posicionY: Number(v.posicionY),
+      laneId: Number(v.laneId)
     };
     const actual = this.gateway();
     this.enviar(actual ? this.gatewayService.editar(actual.id, datos) : this.gatewayService.crear(Number(v.laneId), datos));

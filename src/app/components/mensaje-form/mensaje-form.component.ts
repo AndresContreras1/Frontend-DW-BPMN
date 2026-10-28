@@ -42,6 +42,7 @@ export class MensajeFormComponent extends FormularioElementoBase<MensajeResponse
   private readonly poolDestino = signal<number | null>(null);
   readonly derivaAError = signal(false);
   readonly conDestinoExterno = signal(false);
+  readonly conThrow = signal(false);
 
   readonly opcionesPools = computed<OpcionLista[]>(() => this.datos().pools.map((p) => ({ valor: String(p.id), etiqueta: p.nombre })));
 
@@ -73,7 +74,7 @@ export class MensajeFormComponent extends FormularioElementoBase<MensajeResponse
     eventoCatchId: new FormControl('', { nonNullable: true }),
     claveCorrelacion: new FormControl('', { nonNullable: true }),
     tipoDestinoExterno: new FormControl('', { nonNullable: true }),
-    destinoExterno: new FormControl('', { nonNullable: true }),
+    destinoExterno: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
     politicaFalloNotificacion: new FormControl('', { nonNullable: true }),
     actividadErrorId: new FormControl('', { nonNullable: true }),
     politicaSinCaso: new FormControl('', { nonNullable: true })
@@ -113,6 +114,7 @@ export class MensajeFormComponent extends FormularioElementoBase<MensajeResponse
     this.poolDestino.set(v.poolDestinoId ? Number(v.poolDestinoId) : null);
     this.derivaAError.set(v.politicaFalloNotificacion === 'DERIVAR_ACTIVIDAD_ERROR');
     this.conDestinoExterno.set(v.tipoDestinoExterno !== '');
+    this.conThrow.set(v.eventoThrowId !== '');
     if (v.eventoThrowId && !this.opcionesThrow().some((o) => o.valor === v.eventoThrowId)) {
       this.form.controls.eventoThrowId.setValue('');
     }

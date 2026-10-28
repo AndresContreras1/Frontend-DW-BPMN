@@ -12,7 +12,7 @@
   <app-campo-formulario idCampo="selDestinoArco" etiqueta="Nodo de destino" tipo="select" ayuda="Solo se ofrecen nodos del mismo pool que el origen." [opciones]="opcionesDestino()" [control]="form.controls.destinoId" [errorServidor]="erroresServidor()['destinoId'] ?? ''" />
   <app-campo-formulario idCampo="txtEtiquetaArco" etiqueta="Etiqueta" [control]="form.controls.etiqueta" />
   @if (pideCondicion()) {
-    <app-campo-formulario idCampo="txtCondicionArco" etiqueta="Condición" ayuda="Obligatoria para publicar: los arcos que salen de un gateway exclusivo o inclusivo deben tener condición." [control]="form.controls.condicion" [errorServidor]="erroresServidor()['condicion'] ?? ''" />
+    <app-campo-formulario idCampo="txtCondicionArco" etiqueta="Condición" [ayuda]="condicionObligatoria() ? 'Obligatoria: el gateway diverge (menos de 2 arcos entrantes).' : 'Opcional: el gateway converge (2 o más arcos entrantes).'" [control]="form.controls.condicion" [errorServidor]="erroresServidor()['condicion'] ?? ''" />
   } @else {
     <p class="small text-secondary" id="avisoSinCondicion">La condición solo aplica a arcos que salen de un gateway exclusivo o inclusivo.</p>
   }

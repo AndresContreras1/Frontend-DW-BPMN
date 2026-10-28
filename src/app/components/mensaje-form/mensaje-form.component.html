@@ -18,19 +18,24 @@
     </div>
   </div>
   <app-campo-formulario idCampo="selEventoThrow" etiqueta="Message Throw (emisor)" tipo="select" ayuda="Evento de envío del pool de origen." [opciones]="opcionesThrow()" [control]="form.controls.eventoThrowId" [errorServidor]="erroresServidor()['eventoThrowId'] ?? ''" />
+  @if (!conThrow()) {
+    <p class="small text-secondary" id="avisoSinThrow">Para indicar receptor, correlación, destino externo y políticas, primero elige el Message Throw.</p>
+  }
+  @if (conThrow()) {
   <app-campo-formulario idCampo="selEventoCatch" etiqueta="Message Catch (receptor)" tipo="select" ayuda="Evento de recepción del pool de destino; vacío si el destino es externo." [opciones]="opcionesCatch()" [control]="form.controls.eventoCatchId" [errorServidor]="erroresServidor()['eventoCatchId'] ?? ''" />
-  <app-campo-formulario idCampo="txtClaveMensaje" etiqueta="Clave de correlación" [control]="form.controls.claveCorrelacion" [errorServidor]="erroresServidor()['claveCorrelacion'] ?? ''" />
+  <app-campo-formulario idCampo="txtClaveMensaje" etiqueta="Clave de correlación" ayuda="Si se deja vacía, hereda la clave del Message Throw." [control]="form.controls.claveCorrelacion" [errorServidor]="erroresServidor()['claveCorrelacion'] ?? ''" />
 
   <h4 class="h6 mt-3">Notificación a un sistema externo (opcional)</h4>
   <app-campo-formulario idCampo="selTipoDestino" etiqueta="Tipo de destino" tipo="select" [opciones]="tiposDestino" [control]="form.controls.tipoDestinoExterno" />
   @if (conDestinoExterno()) {
-    <app-campo-formulario idCampo="txtDestinoExterno" etiqueta="Destino documentado" ayuda="Dirección de correo, URL del servicio o nombre de la cola. El pool destino debe ser un sistema externo de caja negra." [control]="form.controls.destinoExterno" [errorServidor]="erroresServidor()['destinoExterno'] ?? ''" />
+    <app-campo-formulario idCampo="txtDestinoExterno" etiqueta="Destino documentado" ayuda="Descripción del destino (máximo 200 caracteres), por ejemplo: API de facturación. Es solo documentación: no escribas credenciales ni direcciones reales. El pool destino debe ser un sistema externo de caja negra." [control]="form.controls.destinoExterno" [errorServidor]="erroresServidor()['destinoExterno'] ?? ''" />
     <app-campo-formulario idCampo="selPoliticaFallo" etiqueta="Si falla la notificación" tipo="select" [opciones]="politicasFallo" [control]="form.controls.politicaFalloNotificacion" />
     @if (derivaAError()) {
       <app-campo-formulario idCampo="selActividadError" etiqueta="Actividad de error" tipo="select" [opciones]="opcionesActividadError()" [control]="form.controls.actividadErrorId" [errorServidor]="erroresServidor()['actividadErrorId'] ?? ''" />
     }
   }
   <app-campo-formulario idCampo="selPoliticaSinCaso" etiqueta="Si el mensaje llega sin un caso abierto" tipo="select" [opciones]="politicasSinCaso" [control]="form.controls.politicaSinCaso" />
+  }
 
   <div class="d-flex gap-2">
     <button id="btnGuardarMensaje" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ mensaje() ? 'Guardar cambios' : 'Crear mensaje' }}</button>

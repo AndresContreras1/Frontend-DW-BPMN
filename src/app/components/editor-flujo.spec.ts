@@ -6,10 +6,10 @@ import { EventoMensajeResponse } from '../models/evento-mensaje.model';
 import { CorrelacionResponse, MensajeResponse } from '../models/mensaje.model';
 import { ArcoService } from '../service/arco.service';
 import { EventoMensajeService } from '../service/evento-mensaje.service';
+import { ValidacionModeloResponse } from '../models/validacion-modelo.model';
 import { MensajeService } from '../service/mensaje.service';
 import { NotificacionService } from '../service/notificacion.service';
 import { diagramaEjemplo } from '../testing/datos';
-import { calcularAdvertencias } from '../utils/advertencias-modelo';
 import { listarNodos } from '../utils/nodos';
 import { ArcoFormComponent } from './arco-form/arco-form.component';
 import { CorrelacionFormComponent } from './correlacion-form/correlacion-form.component';
@@ -33,69 +33,26 @@ describe('listarNodos', () => {
   });
 });
 
-describe('calcularAdvertencias', () => {
-  it('modeloDeEjemplo_avisaDelThrowSinMensajeAsociado', () => {
-    const sinMensajes = calcularAdvertencias({ ...datos, mensajes: [] });
-    expect(sinMensajes.some((a) => a.includes('NotificarPago') && a.includes('no tiene un mensaje asociado'))).toBeTrue();
-  });
-
-  it('gatewayDivergenteConUnaSalida_yArcosSinCondicion_seAvisan', () => {
-    const avisos = calcularAdvertencias({ ...datos, arcos: [datos.arcos[0], datos.arcos[1], { ...datos.arcos[2], condicion: undefined }] });
-    expect(avisos).toContain('El gateway "Aprobada" debe tener al menos dos salidas.');
-    expect(avisos).toContain('Todos los arcos salientes del gateway "Aprobada" deben tener condición.');
-  });
-
-  it('gatewayParalelo_noExigeCondicion', () => {
-    const avisos = calcularAdvertencias({
-      ...datos,
-      gateways: [{ ...datos.gateways[0], tipoGateway: 'PARALELO' }],
-      arcos: [datos.arcos[1], { ...datos.arcos[2], condicion: undefined }, { ...datos.arcos[3], condicion: undefined }]
-    });
-    expect(avisos.some((a) => a.includes('deben tener condición'))).toBeFalse();
-  });
-
-  it('actividadSinArcos_seAvisa', () => {
-    expect(calcularAdvertencias({ ...datos, arcos: [] }).some((a) => a.includes('no está conectada'))).toBeTrue();
-  });
-
-  it('catchDeInicioConArcoEntrante_yCatchSinMensaje_seAvisan', () => {
-    const avisos = calcularAdvertencias({
-      ...datos,
-      eventos: [{ ...datos.eventos[0], id: 50, tipoEvento: 'CATCH_INICIO' }],
-      arcos: [{ id: 1, origenId: 100, destinoId: 50, poolId: 1 }],
-      mensajes: []
-    });
-    expect(avisos.some((a) => a.includes('no puede tener arcos entrantes'))).toBeTrue();
-    expect(avisos.some((a) => a.includes('no recibe ningún mensaje'))).toBeTrue();
-  });
-
-  it('mensajeIncompleto_seAvisaEnCadaRegla', () => {
-    const base = datos.mensajes[0];
-    const avisos = calcularAdvertencias({
-      ...datos,
-      mensajes: [
-        { ...base, id: 1, eventoThrowId: undefined, eventoCatchId: undefined, tipoDestinoExterno: undefined, claveCorrelacion: undefined },
-        { ...base, id: 2, nombre: 'Repetido', claveCorrelacion: 'k', eventoCatchId: 103 },
-        { ...base, id: 3, nombre: 'repetido', claveCorrelacion: 'K', eventoCatchId: 103 },
-        { ...base, id: 4, nombre: 'Externo', poolDestinoId: 1, destinoExterno: '' }
-      ]
-    });
-    expect(avisos.some((a) => a.includes('debe tener un Message Throw'))).toBeTrue();
-    expect(avisos.some((a) => a.includes('Message Catch o un destino externo'))).toBeTrue();
-    expect(avisos.some((a) => a.includes('no tiene clave de correlación'))).toBeTrue();
-    expect(avisos.some((a) => a.includes('mensajes ambiguos'))).toBeTrue();
-    expect(avisos.some((a) => a.includes('caja negra y documentar el destino'))).toBeTrue();
-  });
-
-  it('panel_muestraLasAdvertenciasOElMensajeDeSinAdvertencias', () => {
+describe('PanelAdvertenciasComponent', () => {
+  function crear(validacion: ValidacionModeloResponse | null) {
     const fixture = TestBed.createComponent(PanelAdvertenciasComponent);
-    fixture.componentRef.setInput('datos', { ...datos, mensajes: [] });
+    fixture.componentRef.setInput('validacion', validacion);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('#listaAdvertenciasModelo li').length).toBeGreaterThan(0);
-    const limpio = TestBed.createComponent(PanelAdvertenciasComponent);
-    limpio.componentRef.setInput('datos', { pools: [], lanes: [], actividades: [], gateways: [], eventos: [], arcos: [], mensajes: [] });
-    limpio.detectChanges();
-    expect((limpio.nativeElement as HTMLElement).querySelector('#txtSinAdvertencias')).not.toBeNull();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('modeloValido_avisaQueSePuedePublicar', () => {
+    expect(crear({ valido: true, advertencias: [] }).querySelector('#txtSinAdvertencias')).not.toBeNull();
+  });
+
+  it('modeloConAdvertencias_lasListaTalComoLasDaElBackend', () => {
+    const el = crear({ valido: false, advertencias: ['El gateway "Aprobada" debe tener al menos dos salidas.', 'Mensaje sin correlación.'] });
+    expect(el.querySelectorAll('#listaAdvertenciasModelo li').length).toBe(2);
+    expect(el.textContent).toContain('al menos dos salidas');
+  });
+
+  it('sinRespuestaTodavia_muestraQueEstaValidando', () => {
+    expect(crear(null).textContent).toContain('Validando');
   });
 });
 
@@ -126,13 +83,38 @@ describe('EventoFormComponent', () => {
     expect(servicio.crear).toHaveBeenCalledWith(10, jasmine.objectContaining({ tipoEvento: 'CATCH_INICIO', claveCorrelacion: 'k', posicionX: 240, origenExterno: false }));
   });
 
-  it('editar_precargaYNoDejaCambiarLaLane', () => {
+  it('editar_permiteMoverDeLaneYEnviaElLaneId', () => {
     servicio.editar.and.returnValue(of(evento));
     const fixture = crear(evento);
-    expect(fixture.componentInstance.form.controls.laneId.disabled).toBeTrue();
+    expect(fixture.componentInstance.form.controls.laneId.enabled).toBeTrue();
+    fixture.componentInstance.form.patchValue({ laneId: '10' });
     fixture.componentInstance.alCambiarLane();
     fixture.componentInstance.guardar();
-    expect(servicio.editar).toHaveBeenCalledWith(103, jasmine.objectContaining({ nombre: 'NotificarPago' }));
+    expect(servicio.editar).toHaveBeenCalledWith(103, jasmine.objectContaining({ nombre: 'NotificarPago', laneId: 10, actividadIds: undefined }));
+  });
+
+  it('catch_indicaLasActividadesQueUsanLosDatosDelMensaje', () => {
+    servicio.crear.and.returnValue(of(evento));
+    const fixture = crear(null, 10);
+    const c = fixture.componentInstance;
+    c.form.patchValue({ nombre: 'Recibir', tipoEvento: 'CATCH_INTERMEDIO', contenido: 'dato', claveCorrelacion: 'k' });
+    c.actualizarTipo();
+    fixture.detectChanges();
+    expect(c.esCatch()).toBeTrue();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('#chkActividadEvento100')?.click();
+    c.alternarActividad(101);
+    c.alternarActividad(101);
+    c.guardar();
+    expect(servicio.crear).toHaveBeenCalledWith(10, jasmine.objectContaining({ actividadIds: [100], tipoEvento: 'CATCH_INTERMEDIO' }));
+    c.form.patchValue({ tipoEvento: 'THROW' });
+    c.actualizarTipo();
+    expect(c.actividadIds()).toEqual([]);
+  });
+
+  it('editarCatch_precargaLasActividadesDelBackend', () => {
+    const fixture = crear({ ...evento, tipoEvento: 'CATCH_INICIO', actividadIds: [101] });
+    expect(fixture.componentInstance.actividadIds()).toEqual([101]);
+    expect(fixture.componentInstance.esCatch()).toBeTrue();
   });
 
   it('sinClaveDeCorrelacion_noSeEnvia', () => {
@@ -202,6 +184,24 @@ describe('ArcoFormComponent', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.pideCondicion()).toBeTrue();
     expect((fixture.nativeElement as HTMLElement).querySelector('#txtCondicionArco')).not.toBeNull();
+  });
+
+  it('condicion_esObligatoriaSoloSiElGatewayDiverge', () => {
+    const fixture = crear();
+    const c = fixture.componentInstance;
+    c.form.patchValue({ origenId: '102', destinoId: '103' });
+    c.alCambiarOrigen();
+    expect(c.condicionObligatoria()).toBeTrue();
+    expect(c.form.controls.condicion.invalid).toBeTrue();
+    c.guardar();
+    expect(servicio.crear).not.toHaveBeenCalled();
+    const convergente = TestBed.createComponent(ArcoFormComponent);
+    convergente.componentRef.setInput('datos', { ...datos, arcos: [...datos.arcos, { id: 9, origenId: 100, destinoId: 102, poolId: 1 }] });
+    convergente.detectChanges();
+    convergente.componentInstance.form.patchValue({ origenId: '102' });
+    convergente.componentInstance.alCambiarOrigen();
+    expect(convergente.componentInstance.condicionObligatoria()).toBeFalse();
+    expect(convergente.componentInstance.form.controls.condicion.valid).toBeTrue();
   });
 
   it('crear_conGatewayEnviaLaCondicion', () => {
