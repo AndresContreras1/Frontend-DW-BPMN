@@ -15,11 +15,17 @@
 </section>
 
 <section aria-labelledby="tituloLista">
-  <h2 class="h5" id="tituloLista">Personas con acceso</h2>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+    <h2 class="h5 mb-0" id="tituloLista">{{ verDesactivados() ? 'Personas desactivadas' : 'Personas con acceso' }}</h2>
+    <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar por estado">
+      <button id="btnVerActivos" type="button" class="btn" [class.btn-primary]="!verDesactivados()" [class.btn-outline-primary]="verDesactivados()" (click)="cambiarVista(false)">Activos</button>
+      <button id="btnVerDesactivados" type="button" class="btn" [class.btn-primary]="verDesactivados()" [class.btn-outline-primary]="!verDesactivados()" (click)="cambiarVista(true)">Desactivados</button>
+    </div>
+  </div>
   @if (cargando()) {
     <app-spinner-carga texto="Cargando usuarios..." />
   } @else if (usuarios().length === 0) {
-    <app-estado-vacio mensaje="Aún no hay usuarios." />
+    <app-estado-vacio [mensaje]="verDesactivados() ? 'No hay usuarios desactivados.' : 'Aún no hay usuarios activos.'" />
   } @else {
     <div class="table-responsive">
       <table class="table table-hover align-middle bg-white" id="tablaUsuarios">

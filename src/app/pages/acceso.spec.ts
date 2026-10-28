@@ -76,7 +76,7 @@ describe('RegistroComponent', () => {
     correoContacto: 'c@acme.com',
     nombreAdmin: 'Ana',
     emailAdmin: 'ana@acme.com',
-    passwordAdmin: '123456'
+    passwordAdmin: '12345678'
   };
 
   beforeEach(() => {
@@ -237,15 +237,26 @@ describe('UsuariosComponent', () => {
     expect(fixture.componentInstance.usuarios()[1].rolAcceso).toBe('EDITOR');
   });
 
-  it('desactivar_soloMarcaInactivoCuandoElBackendConfirma', () => {
+  it('desactivar_saleDeLaListaDeActivosSoloCuandoElBackendConfirma', () => {
     usuarios.desactivar.and.returnValue(of(undefined));
     const fixture = crear();
     fixture.componentInstance.pedirDesactivar(editor);
     expect(fixture.componentInstance.usuarioADesactivar()).toEqual(editor);
-    expect(fixture.componentInstance.usuarios()[1].activo).toBeTrue();
+    expect(fixture.componentInstance.usuarios().length).toBe(2);
     fixture.componentInstance.confirmarDesactivar();
-    expect(fixture.componentInstance.usuarios()[1].activo).toBeFalse();
+    expect(fixture.componentInstance.usuarios().length).toBe(1);
     expect(fixture.componentInstance.usuarioADesactivar()).toBeNull();
+  });
+
+  it('cambiarVista_pideLosDesactivadosConActivoFalse', () => {
+    const fixture = crear();
+    usuarios.listar.and.returnValue(of([{ ...editor, activo: false }]));
+    fixture.componentInstance.cambiarVista(true);
+    expect(usuarios.listar).toHaveBeenCalledWith(false);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('#btnReactivar2')).not.toBeNull();
+    fixture.componentInstance.cambiarVista(false);
+    expect(usuarios.listar).toHaveBeenCalledWith(undefined);
   });
 
   it('desactivar_error_mantieneAlUsuarioActivo', () => {
@@ -265,13 +276,14 @@ describe('UsuariosComponent', () => {
     expect(usuarios.desactivar).not.toHaveBeenCalled();
   });
 
-  it('reactivar_marcaActivoConLaRespuesta', () => {
+  it('reactivar_saleDeLaListaDeDesactivadosConLaRespuesta', () => {
     usuarios.actualizar.and.returnValue(of({ ...editor, activo: true }));
-    usuarios.listar.and.returnValue(of([admin, { ...editor, activo: false }]));
+    usuarios.listar.and.returnValue(of([{ ...editor, activo: false }]));
     const fixture = TestBed.createComponent(UsuariosComponent);
     fixture.detectChanges();
+    fixture.componentInstance.cambiarVista(true);
     fixture.componentInstance.reactivar(editor);
-    expect(fixture.componentInstance.usuarios()[1].activo).toBeTrue();
+    expect(fixture.componentInstance.usuarios().length).toBe(0);
   });
 
   it('reactivar_error_avisa', () => {

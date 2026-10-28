@@ -27,7 +27,7 @@ export class RegistroComponent {
     correoContacto: campo(Validators.email),
     nombreAdmin: campo(),
     emailAdmin: campo(Validators.email),
-    passwordAdmin: campo(Validators.minLength(6))
+    passwordAdmin: campo(Validators.minLength(8))
   });
 
   readonly enviando = signal(false);

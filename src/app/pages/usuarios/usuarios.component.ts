@@ -23,13 +23,24 @@ export class UsuariosComponent implements OnInit {
 
   readonly roles = ROLES_ACCESO;
   readonly usuarios = signal<UsuarioResponse[]>([]);
+  readonly verDesactivados = signal(false);
   readonly cargando = signal(true);
   readonly invitacion = signal<InvitacionUsuarioResponse | null>(null);
   readonly usuarioADesactivar = signal<UsuarioResponse | null>(null);
   readonly procesando = signal(false);
 
   ngOnInit(): void {
-    this.usuarioService.listar().subscribe({
+    this.cargar();
+  }
+
+  cambiarVista(desactivados: boolean): void {
+    this.verDesactivados.set(desactivados);
+    this.cargar();
+  }
+
+  cargar(): void {
+    this.cargando.set(true);
+    this.usuarioService.listar(this.verDesactivados() ? false : undefined).subscribe({
       next: (lista) => {
         this.usuarios.set(lista);
         this.cargando.set(false);
@@ -70,7 +81,8 @@ export class UsuariosComponent implements OnInit {
   reactivar(usuario: UsuarioResponse): void {
     this.usuarioService.actualizar(usuario.id, { activo: true }).subscribe({
       next: (actualizado) => {
-        this.reemplazar(actualizado);
+        // Sale de la lista de desactivados cuando el backend confirma.
+        this.usuarios.update((lista) => lista.filter((u) => u.id !== actualizado.id));
         this.notificaciones.exito(actualizado.nombre + ' volvió a estar activo.');
       },
       error: (e: unknown) => this.notificaciones.error(mensajeDeError(e))
@@ -94,7 +106,7 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.desactivar(usuario.id).subscribe({
       next: () => {
         // La fila cambia solo cuando el backend confirma. El usuario no se borra: queda inactivo.
-        this.reemplazar({ ...usuario, activo: false });
+        this.usuarios.update((lista) => lista.filter((u) => u.id !== usuario.id));
         this.procesando.set(false);
         this.usuarioADesactivar.set(null);
         this.notificaciones.exito(usuario.nombre + ' quedó desactivado.');

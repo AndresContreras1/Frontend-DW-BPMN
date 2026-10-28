@@ -29,7 +29,7 @@
               <app-campo-formulario idCampo="txtEmailAdmin" etiqueta="Correo del administrador" tipo="email" [control]="form.controls.emailAdmin" [errorServidor]="erroresServidor()['emailAdmin'] ?? ''" />
             </div>
             <div class="col-12 col-md-6">
-              <app-campo-formulario idCampo="txtPasswordAdmin" etiqueta="Contraseña" tipo="password" ayuda="Mínimo 6 caracteres." [control]="form.controls.passwordAdmin" [errorServidor]="erroresServidor()['passwordAdmin'] ?? ''" />
+              <app-campo-formulario idCampo="txtPasswordAdmin" etiqueta="Contraseña" tipo="password" ayuda="Mínimo 8 caracteres." [control]="form.controls.passwordAdmin" [errorServidor]="erroresServidor()['passwordAdmin'] ?? ''" />
             </div>
           </div>
           <button id="btnRegistrar" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">
