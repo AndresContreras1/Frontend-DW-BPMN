@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { switchMap } from 'rxjs';
 import { ActividadFormComponent } from '../../components/actividad-form/actividad-form.component';
 import { ArcoFormComponent } from '../../components/arco-form/arco-form.component';
 import { DiagramaComponent } from '../../components/diagrama/diagrama.component';
@@ -14,12 +15,15 @@ import { PanelAdvertenciasComponent } from '../../components/panel-advertencias/
 import { PanelElementoComponent, ReordenLanes } from '../../components/panel-elemento/panel-elemento.component';
 import { PoolFormComponent } from '../../components/pool-form/pool-form.component';
 import { SpinnerCargaComponent } from '../../components/spinner-carga/spinner-carga.component';
+import { PermisoEstructuraResponse } from '../../models/permiso-estructura.model';
+import { ValidacionModeloResponse } from '../../models/validacion-modelo.model';
 import { FormularioEditor } from '../../models/formulario-editor.model';
 import { ProcesoDiagramaResponse, ProcesoResponse } from '../../models/proceso.model';
 import { RolProcesoVistaResponse } from '../../models/rol-proceso.model';
 import { SeleccionDiagrama } from '../../models/seleccion-diagrama.model';
 import { AuthService } from '../../service/auth.service';
 import { LaneService } from '../../service/lane.service';
+import { PermisoEstructuraService } from '../../service/permiso-estructura.service';
 import { NotificacionService } from '../../service/notificacion.service';
 import { ProcesoService } from '../../service/proceso.service';
 import { RolProcesoService } from '../../service/rol-proceso.service';
@@ -57,12 +61,15 @@ export class EditorProcesoComponent implements OnInit {
   private readonly procesoService = inject(ProcesoService);
   private readonly rolService = inject(RolProcesoService);
   private readonly laneService = inject(LaneService);
+  private readonly permisoService = inject(PermisoEstructuraService);
   private readonly notificaciones = inject(NotificacionService);
   readonly auth = inject(AuthService);
   readonly id = Number(inject(ActivatedRoute).snapshot.params['id']);
 
   readonly datos = signal<ProcesoDiagramaResponse | null>(null);
   readonly roles = signal<RolProcesoVistaResponse[]>([]);
+  readonly permisos = signal<PermisoEstructuraResponse | null>(null);
+  readonly validacion = signal<ValidacionModeloResponse | null>(null);
   readonly seleccion = signal<SeleccionDiagrama | null>(null);
   readonly formulario = signal<FormularioEditor | null>(null);
   readonly aEliminar = signal<SeleccionDiagrama | null>(null);
@@ -74,15 +81,28 @@ export class EditorProcesoComponent implements OnInit {
       next: (lista) => this.roles.set(lista),
       error: (e: unknown) => this.notificaciones.error(mensajeDeError(e))
     });
+    this.permisoService.mio().subscribe({
+      next: (p) => this.permisos.set(p),
+      error: (e: unknown) => this.notificaciones.error(mensajeDeError(e))
+    });
     this.recargar();
   }
 
+  /** Pide el diagrama y, encadenada con switchMap, la validación del modelo que calcula el backend. */
   recargar(): void {
-    this.procesoService.diagrama(this.id).subscribe({
-      next: (diagrama) => {
-        this.datos.set(diagrama);
+    this.procesoService
+      .diagrama(this.id)
+      .pipe(
+        switchMap((diagrama) => {
+          this.datos.set(diagrama);
+          this.limpiarSeleccionHuerfana(diagrama);
+          return this.procesoService.validacion(this.id);
+        })
+      )
+      .subscribe({
+      next: (validacion) => {
+        this.validacion.set(validacion);
         this.cargando.set(false);
-        this.limpiarSeleccionHuerfana(diagrama);
       },
       error: (e: unknown) => {
         this.cargando.set(false);
@@ -104,6 +124,14 @@ export class EditorProcesoComponent implements OnInit {
   }
 
   // ---- Abrir formularios ----
+
+  puedeCrearPool(): boolean {
+    return this.auth.puedeEditar() && (this.permisos()?.crearPool ?? false);
+  }
+
+  puedeCrearLane(): boolean {
+    return this.auth.puedeEditar() && (this.permisos()?.crearLane ?? false);
+  }
 
   nuevoPool(): void {
     this.formulario.set({ tipo: 'pool', pool: null });

@@ -1,15 +1,19 @@
 <section class="card" aria-labelledby="tituloAdvertencias" id="panelAdvertencias">
   <div class="card-body">
     <h2 class="h6" id="tituloAdvertencias">Advertencias del modelo</h2>
-    @if (advertencias().length === 0) {
-      <p class="small text-success mb-1" id="txtSinAdvertencias">Sin advertencias de coherencia.</p>
+    @if (validacion(); as v) {
+      @if (v.valido) {
+        <p class="small text-success mb-1" id="txtSinAdvertencias">Sin advertencias: el proceso se puede publicar.</p>
+      } @else {
+        <ul class="small ps-3 mb-1" id="listaAdvertenciasModelo">
+          @for (a of v.advertencias; track $index) {
+            <li>{{ a }}</li>
+          }
+        </ul>
+      }
     } @else {
-      <ul class="small ps-3 mb-1" id="listaAdvertenciasModelo">
-        @for (a of advertencias(); track $index) {
-          <li>{{ a }}</li>
-        }
-      </ul>
+      <p class="small text-secondary mb-1">Validando el modelo...</p>
     }
-    <p class="small text-secondary mb-0">Es una revisión en pantalla; al publicar, el backend valida el modelo completo (incluida la correlación de cada mensaje).</p>
+    <p class="small text-secondary mb-0">La validación la hace el backend con las mismas reglas que se aplican al publicar.</p>
   </div>
 </section>

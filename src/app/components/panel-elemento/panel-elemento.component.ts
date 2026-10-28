@@ -1,7 +1,8 @@
 import { Component, computed, input, output } from '@angular/core';
-import { LaneResponse } from '../../models/lane.model';
+
+import { PermisoEstructuraResponse } from '../../models/permiso-estructura.model';
 import { SeleccionDiagrama } from '../../models/seleccion-diagrama.model';
-import { DatosDiagrama } from '../../utils/diagrama-layout';
+import { DatosDiagrama, LaneDatos } from '../../utils/diagrama-layout';
 import { CorrelacionFormComponent } from '../correlacion-form/correlacion-form.component';
 import { DetalleElementoComponent } from '../detalle-elemento/detalle-elemento.component';
 
@@ -20,7 +21,9 @@ export class PanelElementoComponent {
   readonly datos = input.required<DatosDiagrama>();
   readonly seleccion = input<SeleccionDiagrama | null>(null);
   readonly puedeEditar = input<boolean>(false);
-  readonly puedeEliminar = input<boolean>(false);
+  /** El administrador puede eliminar cualquier elemento; los demás roles dependen de sus permisos de estructura. */
+  readonly esAdministrador = input<boolean>(false);
+  readonly permisos = input<PermisoEstructuraResponse | null>(null);
 
   readonly editar = output<SeleccionDiagrama>();
   readonly eliminar = output<SeleccionDiagrama>();
@@ -29,7 +32,35 @@ export class PanelElementoComponent {
   readonly reordenar = output<ReordenLanes>();
   readonly seleccionar = output<SeleccionDiagrama>();
 
-  readonly lanesDelPool = computed<LaneResponse[]>(() => {
+  readonly puedeEditarSeleccion = computed(() => {
+    const sel = this.seleccion();
+    if (!sel || !this.puedeEditar()) {
+      return false;
+    }
+    const p = this.permisos();
+    if (sel.tipo === 'pool') {
+      return p?.editarPool ?? false;
+    }
+    return sel.tipo === 'lane' ? (p?.editarLane ?? false) : true;
+  });
+
+  readonly puedeEliminarSeleccion = computed(() => {
+    const sel = this.seleccion();
+    if (!sel) {
+      return false;
+    }
+    const p = this.permisos();
+    if (sel.tipo === 'pool') {
+      return p?.eliminarPool ?? false;
+    }
+    return sel.tipo === 'lane' ? (p?.eliminarLane ?? false) : this.esAdministrador();
+  });
+
+  readonly puedeEditarLanes = computed(() => this.puedeEditar() && (this.permisos()?.editarLane ?? false));
+
+  readonly puedeCrearLane = computed(() => this.puedeEditar() && (this.permisos()?.crearLane ?? false));
+
+  readonly lanesDelPool = computed<LaneDatos[]>(() => {
     const sel = this.seleccion();
     if (sel?.tipo !== 'pool') {
       return [];
@@ -42,7 +73,7 @@ export class PanelElementoComponent {
     return sel?.tipo === 'pool' && (this.datos().pools.find((p) => p.id === sel.id)?.cajaNegra ?? false);
   });
 
-  mover(lane: LaneResponse, direccion: -1 | 1): void {
+  mover(lane: LaneDatos, direccion: -1 | 1): void {
     const ids = this.lanesDelPool().map((l) => l.id);
     const indice = ids.indexOf(lane.id);
     const destino = indice + direccion;

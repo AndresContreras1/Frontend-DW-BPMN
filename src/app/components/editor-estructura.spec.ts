@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { ActividadResponse } from '../models/actividad.model';
 import { GatewayResponse } from '../models/gateway.model';
 import { LaneResponse } from '../models/lane.model';
+import { PermisoEstructuraResponse } from '../models/permiso-estructura.model';
 import { PoolResponse } from '../models/pool.model';
 import { RolProcesoVistaResponse } from '../models/rol-proceso.model';
 import { SeleccionDiagrama } from '../models/seleccion-diagrama.model';
@@ -232,7 +233,7 @@ describe('GatewayFormComponent', () => {
     fixture.componentInstance.form.patchValue({ nombre: 'Decide', tipoGateway: 'PARALELO', laneId: '10' });
     fixture.componentInstance.alCambiarLane();
     fixture.componentInstance.guardar();
-    expect(gateways.crear).toHaveBeenCalledWith(10, { nombre: 'Decide', tipoGateway: 'PARALELO', posicionX: 240, posicionY: 60 });
+    expect(gateways.crear).toHaveBeenCalledWith(10, { nombre: 'Decide', tipoGateway: 'PARALELO', posicionX: 240, posicionY: 60, laneId: 10 });
   });
 
   it('editar_pasarAParaleloAvisaQueSeLimpianLasCondiciones', () => {
@@ -247,10 +248,14 @@ describe('GatewayFormComponent', () => {
     expect(gateways.editar).toHaveBeenCalledWith(102, jasmine.objectContaining({ tipoGateway: 'PARALELO' }));
   });
 
-  it('editar_laLaneNoSePuedeCambiar', () => {
+  it('editar_moverDeLaneEnviaElLaneId', () => {
+    gateways.editar.and.returnValue(of(gateway));
     const fixture = crear(gateway);
-    expect(fixture.componentInstance.form.controls.laneId.disabled).toBeTrue();
+    expect(fixture.componentInstance.form.controls.laneId.enabled).toBeTrue();
+    fixture.componentInstance.form.patchValue({ laneId: '10' });
     fixture.componentInstance.alCambiarLane();
+    fixture.componentInstance.guardar();
+    expect(gateways.editar).toHaveBeenCalledWith(102, jasmine.objectContaining({ laneId: 10 }));
   });
 
   it('formularioInvalidoYErrorDelBackend', () => {
@@ -364,13 +369,17 @@ describe('EliminarElementoComponent', () => {
   });
 });
 
+const permisosTodos: PermisoEstructuraResponse = { rolAcceso: 'ADMINISTRADOR', crearPool: true, editarPool: true, eliminarPool: true, crearLane: true, editarLane: true, eliminarLane: true };
+const sinPermisos: PermisoEstructuraResponse = { rolAcceso: 'EDITOR', crearPool: false, editarPool: false, eliminarPool: false, crearLane: false, editarLane: false, eliminarLane: false };
+
 describe('PanelElementoComponent', () => {
-  function crear(seleccion: SeleccionDiagrama | null, puedeEditar = true, puedeEliminar = true) {
+  function crear(seleccion: SeleccionDiagrama | null, puedeEditar = true, esAdministrador = true, permisos: PermisoEstructuraResponse | null = permisosTodos) {
     const fixture = TestBed.createComponent(PanelElementoComponent);
     fixture.componentRef.setInput('datos', datos);
     fixture.componentRef.setInput('seleccion', seleccion);
     fixture.componentRef.setInput('puedeEditar', puedeEditar);
-    fixture.componentRef.setInput('puedeEliminar', puedeEliminar);
+    fixture.componentRef.setInput('esAdministrador', esAdministrador);
+    fixture.componentRef.setInput('permisos', permisos);
     fixture.detectChanges();
     return fixture;
   }
@@ -416,6 +425,32 @@ describe('PanelElementoComponent', () => {
     expect(orden).toEqual({ poolId: 1, laneIds: [11, 10] });
     expect(el.querySelector<HTMLButtonElement>('#btnSubirLane10')?.disabled).toBeTrue();
     fixture.componentInstance.mover(datos.lanes[0], -1);
+  });
+
+  it('editorSinPermisosDeEstructura_noEditaNiEliminaPoolsNiLanes', () => {
+    for (const sel of [{ tipo: 'pool', id: 1 }, { tipo: 'lane', id: 10 }] as SeleccionDiagrama[]) {
+      const el: HTMLElement = crear(sel, true, false, sinPermisos).nativeElement;
+      expect(el.querySelector('#btnEditarElemento')).toBeNull();
+      expect(el.querySelector('#btnEliminarElemento')).toBeNull();
+      expect(el.querySelector('#btnNuevaLaneEnPool')).toBeNull();
+      expect(el.querySelector('#btnSubirLane10')).toBeNull();
+    }
+  });
+
+  it('editorConPermisoDeEstructura_editaPoolsYLanesPeroNoEliminaLoDemas', () => {
+    const permisos = { ...sinPermisos, editarPool: true, eliminarPool: true, editarLane: true };
+    const pool: HTMLElement = crear({ tipo: 'pool', id: 1 }, true, false, permisos).nativeElement;
+    expect(pool.querySelector('#btnEditarElemento')).not.toBeNull();
+    expect(pool.querySelector('#btnEliminarElemento')).not.toBeNull();
+    const lane: HTMLElement = crear({ tipo: 'lane', id: 10 }, true, false, permisos).nativeElement;
+    expect(lane.querySelector('#btnEliminarElemento')).toBeNull();
+    const actividad: HTMLElement = crear({ tipo: 'actividad', id: 100 }, true, false, permisos).nativeElement;
+    expect(actividad.querySelector('#btnEliminarElemento')).toBeNull();
+  });
+
+  it('sinPermisosCargados_seTrataComoSinPermiso', () => {
+    const el: HTMLElement = crear({ tipo: 'pool', id: 1 }, true, false, null).nativeElement;
+    expect(el.querySelector('#btnEditarElemento')).toBeNull();
   });
 
   it('poolCajaNegra_noOfreceAgregarLane', () => {

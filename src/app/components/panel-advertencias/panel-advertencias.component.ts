@@ -1,13 +1,11 @@
-import { Component, computed, input } from '@angular/core';
-import { DatosDiagrama } from '../../utils/diagrama-layout';
-import { calcularAdvertencias } from '../../utils/advertencias-modelo';
+import { Component, input } from '@angular/core';
+import { ValidacionModeloResponse } from '../../models/validacion-modelo.model';
 
-/** Lista de advertencias de coherencia del modelo (se actualiza con cada cambio del diagrama). */
+/** Advertencias de coherencia del modelo, tal como las calcula el backend (GET /procesos/{id}/validacion). */
 @Component({
   selector: 'app-panel-advertencias',
   templateUrl: './panel-advertencias.component.html'
 })
 export class PanelAdvertenciasComponent {
-  readonly datos = input.required<DatosDiagrama>();
-  readonly advertencias = computed(() => calcularAdvertencias(this.datos()));
+  readonly validacion = input<ValidacionModeloResponse | null>(null);
 }

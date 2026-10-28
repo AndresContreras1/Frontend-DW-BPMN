@@ -6,13 +6,18 @@ import { of, throwError } from 'rxjs';
 import { ProcesoDiagramaResponse } from '../../models/proceso.model';
 import { LaneService } from '../../service/lane.service';
 import { NotificacionService } from '../../service/notificacion.service';
+import { PermisoEstructuraService } from '../../service/permiso-estructura.service';
 import { ProcesoService } from '../../service/proceso.service';
 import { RolProcesoService } from '../../service/rol-proceso.service';
 import { TokenService } from '../../service/token.service';
 import { diagramaEjemplo, procesoBase } from '../../testing/datos';
 import { EditorProcesoComponent } from './editor-proceso.component';
 
+const permisosAdmin = { rolAcceso: 'ADMINISTRADOR' as const, crearPool: true, editarPool: true, eliminarPool: true, crearLane: true, editarLane: true, eliminarLane: true };
+const permisosEditor = { rolAcceso: 'EDITOR' as const, crearPool: false, editarPool: true, eliminarPool: false, crearLane: true, editarLane: true, eliminarLane: false };
+
 describe('EditorProcesoComponent', () => {
+  let permisosSvc: jasmine.SpyObj<PermisoEstructuraService>;
   let procesos: jasmine.SpyObj<ProcesoService>;
   let roles: jasmine.SpyObj<RolProcesoService>;
   let lanes: jasmine.SpyObj<LaneService>;
@@ -20,8 +25,11 @@ describe('EditorProcesoComponent', () => {
   function crear(rol: 'ADMINISTRADOR' | 'EDITOR' = 'ADMINISTRADOR', diagrama: ProcesoDiagramaResponse = diagramaEjemplo) {
     localStorage.clear();
     new TokenService().guardarSesion('t', { id: 1, nombre: 'U', email: 'u@d.com', rolAcceso: rol, activo: true });
-    procesos = jasmine.createSpyObj<ProcesoService>('ProcesoService', ['diagrama', 'cambiarEstado']);
+    procesos = jasmine.createSpyObj<ProcesoService>('ProcesoService', ['diagrama', 'cambiarEstado', 'validacion']);
     procesos.diagrama.and.returnValue(of(diagrama));
+    procesos.validacion.and.returnValue(of({ valido: false, advertencias: ['El gateway "Aprobada" debe tener al menos dos salidas.'] }));
+    permisosSvc = jasmine.createSpyObj<PermisoEstructuraService>('PermisoEstructuraService', ['mio']);
+    permisosSvc.mio.and.returnValue(of(rol === 'ADMINISTRADOR' ? permisosAdmin : permisosEditor));
     roles = jasmine.createSpyObj<RolProcesoService>('RolProcesoService', ['listar']);
     roles.listar.and.returnValue(of([{ id: 1, nombre: 'Empleado', procesosQueLoUsan: 1, enUso: true }]));
     lanes = jasmine.createSpyObj<LaneService>('LaneService', ['reordenar']);
@@ -31,6 +39,7 @@ describe('EditorProcesoComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ProcesoService, useValue: procesos },
+        { provide: PermisoEstructuraService, useValue: permisosSvc },
         { provide: RolProcesoService, useValue: roles },
         { provide: LaneService, useValue: lanes },
         { provide: ActivatedRoute, useValue: { snapshot: { params: { id: '7' } } } }
@@ -40,6 +49,21 @@ describe('EditorProcesoComponent', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('inicio_cargaPermisosYValidacionDelBackend', () => {
+    const fixture = crear();
+    expect(permisosSvc.mio).toHaveBeenCalled();
+    expect(procesos.validacion).toHaveBeenCalledWith(7);
+    expect(fixture.componentInstance.validacion()?.valido).toBeFalse();
+    expect((fixture.nativeElement as HTMLElement).querySelector('#listaAdvertenciasModelo')?.textContent).toContain('al menos dos salidas');
+  });
+
+  it('editorSinPermisoParaCrearPool_tieneElBotonDeshabilitado', () => {
+    const fixture = crear('EDITOR');
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector<HTMLButtonElement>('#btnNuevoPool')?.disabled).toBeTrue();
+    expect(el.querySelector<HTMLButtonElement>('#btnNuevaLane')?.disabled).toBeFalse();
+  });
 
   it('inicio_cargaDiagramaYRoles', () => {
     const fixture = crear();
@@ -53,6 +77,8 @@ describe('EditorProcesoComponent', () => {
   it('inicio_error404_muestraElMensaje', () => {
     localStorage.clear();
     procesos = jasmine.createSpyObj<ProcesoService>('ProcesoService', ['diagrama']);
+    permisosSvc = jasmine.createSpyObj<PermisoEstructuraService>('PermisoEstructuraService', ['mio']);
+    permisosSvc.mio.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
     procesos.diagrama.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404, error: { detail: 'Proceso no encontrado.' } })));
     roles = jasmine.createSpyObj<RolProcesoService>('RolProcesoService', ['listar']);
     roles.listar.and.returnValue(throwError(() => new HttpErrorResponse({ status: 403, error: { detail: 'Sin permisos' } })));
@@ -62,6 +88,7 @@ describe('EditorProcesoComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ProcesoService, useValue: procesos },
+        { provide: PermisoEstructuraService, useValue: permisosSvc },
         { provide: RolProcesoService, useValue: roles },
         { provide: ActivatedRoute, useValue: { snapshot: { params: { id: '7' } } } }
       ]
