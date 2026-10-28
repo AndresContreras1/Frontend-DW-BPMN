@@ -108,7 +108,11 @@ El archivo `.env` está en `.gitignore`.
 
 ## Notas de integración con el backend
 
-- Las listas paginadas (`/procesos` y `/roles/consulta`) reciben el parámetro `pagina` (desde 0) y devuelven páginas de 10 elementos.
+- Las listas paginadas (`/procesos` y `/roles/consulta`) reciben `pagina` (desde 0) y devuelven páginas de 10 elementos por defecto.
 - Un error 400 trae en `detail` el formato `campo: mensaje; campo: mensaje`; la interfaz lo separa por campo y lo muestra bajo cada entrada.
-- Publicar un proceso devuelve 409 con el primer incumplimiento del modelo; el panel de advertencias del editor adelanta las reglas conocidas.
+- El panel de advertencias del editor usa `GET /procesos/{id}/validacion` (todas las incoherencias que impedirían publicar). Publicar devuelve 409 con el primer incumplimiento.
+- Los botones de estructura del editor (crear, editar y eliminar pools y lanes) se habilitan con `GET /permisos-estructura/mio`.
+- `GET /usuarios` lista solo los activos; la pantalla de usuarios tiene el filtro "Desactivados" (`activo=false`) para poder reactivarlos.
+- Las contraseñas deben tener mínimo 8 caracteres.
 - El nombre de un mensaje debe coincidir con el de su evento Message Throw; el formulario lo propone al elegir el evento.
+- Los campos de correlación, destino externo y políticas de un mensaje requieren elegir antes el Message Throw. El destino externo es solo una descripción (máximo 200 caracteres): no se escriben credenciales.
