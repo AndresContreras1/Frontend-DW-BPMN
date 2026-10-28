@@ -11,6 +11,7 @@ import { ProcesoDetalleComponent } from './pages/proceso-detalle/proceso-detalle
 import { ProcesoEdicionComponent } from './pages/proceso-edicion/proceso-edicion.component';
 import { ProcesosComponent } from './pages/procesos/procesos.component';
 import { RegistroComponent } from './pages/registro/registro.component';
+import { RolesComponent } from './pages/roles/roles.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 
 export const routes: Routes = [
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'procesos/:id', component: ProcesoDetalleComponent, canActivate: [authGuard] },
   { path: 'compartidos', component: CompartidosComponent, canActivate: [authGuard] },
   { path: 'compartidos/:id', component: CompartidoDetalleComponent, canActivate: [authGuard] },
+  { path: 'roles', component: RolesComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'usuarios', component: UsuariosComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'permisos', component: PermisosComponent, canActivate: [rolGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: '**', component: NoEncontradaComponent }

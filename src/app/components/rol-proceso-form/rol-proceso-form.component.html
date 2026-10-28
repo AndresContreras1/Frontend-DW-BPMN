@@ -1,0 +1,8 @@
+<form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+  <app-campo-formulario idCampo="txtNombreRol" etiqueta="Nombre del rol de proceso" ayuda="Es el nombre que llevarán las lanes, por ejemplo: Gerente, Analista." [control]="form.controls.nombre" [errorServidor]="errores()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="txtDescripcionRol" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" [errorServidor]="errores()['descripcion'] ?? ''" />
+  <div class="d-flex gap-2">
+    <button id="btnGuardarRol" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ rol() ? 'Guardar cambios' : 'Crear rol' }}</button>
+    <button id="btnCancelarRol" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>

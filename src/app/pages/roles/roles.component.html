@@ -1,0 +1,85 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+  <h1 class="h3 text-primary mb-0">Roles de proceso</h1>
+  <button id="btnNuevoRol" type="button" class="btn btn-primary" (click)="nuevo()">Nuevo rol de proceso</button>
+</div>
+<p class="text-secondary">Son las responsabilidades que nombran las lanes de los diagramas (no son los roles de acceso de los usuarios). Un rol en uso no se puede eliminar.</p>
+
+@if (formularioAbierto()) {
+  <section class="card mb-3" aria-labelledby="tituloFormRol">
+    <div class="card-body">
+      <h2 class="h5" id="tituloFormRol">{{ rolEnEdicion() ? 'Editar rol de proceso' : 'Nuevo rol de proceso' }}</h2>
+      <app-rol-proceso-form [rol]="rolEnEdicion()" [enviando]="enviando()" [errores]="erroresForm()" (guardar)="guardar($event)" (cancelar)="cerrarFormulario()" />
+    </div>
+  </section>
+}
+
+<form class="card card-body mb-3" (ngSubmit)="buscar()" aria-label="Buscar roles">
+  <div class="row align-items-end">
+    <div class="col-12 col-md-9">
+      <app-campo-formulario idCampo="txtBuscarRol" etiqueta="Buscar por nombre" [control]="busqueda" />
+    </div>
+    <div class="col-12 col-md-3 mb-3">
+      <button id="btnBuscarRol" type="submit" class="btn btn-primary w-100">Buscar</button>
+    </div>
+  </div>
+</form>
+
+@if (error()) {
+  <div class="alert alert-danger" role="alert" id="alertaErrorRoles">{{ error() }}</div>
+}
+
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando roles..." />
+} @else {
+  @if (pagina(); as p) {
+    @if (p.content.length === 0) {
+      <app-estado-vacio mensaje="No hay roles de proceso con ese criterio." />
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white" id="tablaRoles">
+          <thead>
+            <tr><th scope="col">Nombre</th><th scope="col">Descripción</th><th scope="col">Uso</th><th scope="col" class="text-end">Acciones</th></tr>
+          </thead>
+          <tbody>
+            @for (r of p.content; track r.id) {
+              <tr [id]="'filaRol' + r.id">
+                <td class="fw-semibold">{{ r.nombre }}</td>
+                <td>{{ r.descripcion }}</td>
+                <td>
+                  @if (r.enUso) {
+                    <span class="badge text-bg-warning">En uso</span>
+                    <div class="small text-secondary">{{ r.procesos.join(', ') }}</div>
+                  } @else {
+                    <span class="badge text-bg-light border">Sin usar</span>
+                  }
+                </td>
+                <td class="text-end text-nowrap">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" [id]="'btnEditarRol' + r.id" (click)="editar(r)">Editar</button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-1"
+                    [id]="'btnEliminarRol' + r.id"
+                    [disabled]="r.enUso"
+                    [attr.title]="r.enUso ? 'No se puede eliminar: está en uso en ' + r.procesos.join(', ') : null"
+                    (click)="pedirEliminar(r)"
+                  >Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginador [pagina]="p.page" [totalPaginas]="p.totalPages" [totalElementos]="p.totalElements" (cambiarPagina)="cargar($event)" />
+    }
+  }
+}
+
+<app-modal-confirmacion
+  [abierto]="rolAEliminar() !== null"
+  titulo="Eliminar rol de proceso"
+  [mensaje]="'¿Eliminar el rol &quot;' + (rolAEliminar()?.nombre ?? '') + '&quot;?'"
+  textoConfirmar="Eliminar"
+  [procesando]="eliminando()"
+  (confirmar)="confirmarEliminar()"
+  (cancelar)="cancelarEliminar()"
+/>
