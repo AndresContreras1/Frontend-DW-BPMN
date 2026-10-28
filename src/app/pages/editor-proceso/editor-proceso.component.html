@@ -18,6 +18,9 @@
       <button id="btnNuevaLane" type="button" class="btn btn-primary btn-sm" (click)="nuevaLane()">+ Lane</button>
       <button id="btnNuevaActividad" type="button" class="btn btn-primary btn-sm" (click)="nuevoNodo('actividad')">+ Actividad</button>
       <button id="btnNuevoGateway" type="button" class="btn btn-primary btn-sm" (click)="nuevoNodo('gateway')">+ Gateway</button>
+      <button id="btnNuevoEvento" type="button" class="btn btn-primary btn-sm" (click)="nuevoNodo('evento')">+ Evento de mensaje</button>
+      <button id="btnNuevoArco" type="button" class="btn btn-primary btn-sm" (click)="nuevoArco()">+ Arco</button>
+      <button id="btnNuevoMensaje" type="button" class="btn btn-primary btn-sm" (click)="nuevoMensaje()">+ Mensaje</button>
     </div>
 
     <app-leyenda-diagrama />
@@ -50,6 +53,21 @@
                   <app-gateway-form [datos]="d" [gateway]="f.gateway" [laneInicial]="f.laneId" (guardado)="alGuardar('Gateway guardado.')" (cancelar)="cerrarFormulario()" />
                 }
               }
+              @case ('evento') {
+                @if (como('evento'); as f) {
+                  <app-evento-form [datos]="d" [evento]="f.evento" [laneInicial]="f.laneId" (guardado)="alGuardar('Evento guardado.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @case ('arco') {
+                @if (como('arco'); as f) {
+                  <app-arco-form [datos]="d" [arco]="f.arco" (guardado)="alGuardar('Arco guardado.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
+              @case ('mensaje') {
+                @if (como('mensaje'); as f) {
+                  <app-mensaje-form [procesoId]="id" [datos]="d" [mensaje]="f.mensaje" (guardado)="alGuardar('Mensaje guardado.')" (cancelar)="cerrarFormulario()" />
+                }
+              }
               @default {
                 <app-panel-elemento
                   [datos]="d"
@@ -67,6 +85,7 @@
             }
           </div>
         </div>
+        <app-panel-advertencias [datos]="d" />
       </div>
     </div>
 

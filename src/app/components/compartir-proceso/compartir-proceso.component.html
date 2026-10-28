@@ -5,7 +5,7 @@
     @if (error()) {
       <div class="alert alert-danger" role="alert" id="alertaErrorCompartir">{{ error() }}</div>
     }
-    <form class="row align-items-start" (ngSubmit)="compartir()" novalidate>
+    <form class="row align-items-start" (submit)="$event.preventDefault(); compartir()" novalidate>
       <div class="col-12 col-sm-8">
         <app-campo-formulario idCampo="txtEmpresaInvitada" etiqueta="Identificador de la empresa" [control]="empresaId" />
       </div>

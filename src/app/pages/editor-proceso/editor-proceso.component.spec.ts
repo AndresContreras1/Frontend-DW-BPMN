@@ -111,6 +111,34 @@ describe('EditorProcesoComponent', () => {
     expect(el.querySelector('#btnGuardarGateway')).not.toBeNull();
   });
 
+  it('barraDeFlujo_abreEventoArcoYMensajeYMuestraLasAdvertencias', () => {
+    const fixture = crear();
+    const el: HTMLElement = fixture.nativeElement;
+    el.querySelector<HTMLButtonElement>('#btnNuevoEvento')?.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#btnGuardarEvento')).not.toBeNull();
+    fixture.componentInstance.cerrarFormulario();
+    el.querySelector<HTMLButtonElement>('#btnNuevoArco')?.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#btnGuardarArco')).not.toBeNull();
+    fixture.componentInstance.cerrarFormulario();
+    el.querySelector<HTMLButtonElement>('#btnNuevoMensaje')?.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#btnGuardarMensaje')).not.toBeNull();
+    expect(el.querySelector('#panelAdvertencias')).not.toBeNull();
+  });
+
+  it('editarMensajeYArco_abreSusFormulariosPrecargados', () => {
+    const fixture = crear();
+    fixture.componentInstance.editar({ tipo: 'mensaje', id: 300 });
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector<HTMLInputElement>('#txtNombreMensaje')?.value).toBe('Orden de pago');
+    fixture.componentInstance.editar({ tipo: 'arco', id: 202 });
+    fixture.detectChanges();
+    expect(el.querySelector('#selOrigenArco')).not.toBeNull();
+  });
+
   it('nuevaLane_sinPoolDeEmpresa_avisa', () => {
     const fixture = crear('ADMINISTRADOR', { ...diagramaEjemplo, pools: [diagramaEjemplo.pools[1]], lanes: [] });
     spyOn(TestBed.inject(NotificacionService), 'advertencia');

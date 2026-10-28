@@ -31,6 +31,13 @@
     }
   }
 
+  @if (sel.tipo === 'mensaje') {
+    <!-- Se recrea al cambiar de mensaje para volver a consultar su correlación. -->
+    @for (mensajeId of [sel.id]; track mensajeId) {
+      <app-correlacion-form [mensajeId]="mensajeId" [puedeEditar]="puedeEditar()" />
+    }
+  }
+
   @if (sel.tipo === 'pool' && lanesDelPool().length > 0) {
     <section class="mt-3" aria-labelledby="tituloLanesPool">
       <h3 class="h6" id="tituloLanesPool">Lanes del pool (de arriba hacia abajo)</h3>

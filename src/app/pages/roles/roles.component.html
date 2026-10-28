@@ -13,7 +13,7 @@
   </section>
 }
 
-<form class="card card-body mb-3" (ngSubmit)="buscar()" aria-label="Buscar roles">
+<form class="card card-body mb-3" (submit)="$event.preventDefault(); buscar()" aria-label="Buscar roles">
   <div class="row align-items-end">
     <div class="col-12 col-md-9">
       <app-campo-formulario idCampo="txtBuscarRol" etiqueta="Buscar por nombre" [control]="busqueda" />

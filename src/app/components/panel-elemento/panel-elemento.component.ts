@@ -2,6 +2,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { LaneResponse } from '../../models/lane.model';
 import { SeleccionDiagrama } from '../../models/seleccion-diagrama.model';
 import { DatosDiagrama } from '../../utils/diagrama-layout';
+import { CorrelacionFormComponent } from '../correlacion-form/correlacion-form.component';
 import { DetalleElementoComponent } from '../detalle-elemento/detalle-elemento.component';
 
 export interface ReordenLanes {
@@ -12,7 +13,7 @@ export interface ReordenLanes {
 /** Panel del editor: detalle del elemento elegido y las acciones que su rol permite. */
 @Component({
   selector: 'app-panel-elemento',
-  imports: [DetalleElementoComponent],
+  imports: [DetalleElementoComponent, CorrelacionFormComponent],
   templateUrl: './panel-elemento.component.html'
 })
 export class PanelElementoComponent {

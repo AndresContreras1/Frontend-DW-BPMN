@@ -1,12 +1,16 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ActividadFormComponent } from '../../components/actividad-form/actividad-form.component';
+import { ArcoFormComponent } from '../../components/arco-form/arco-form.component';
 import { DiagramaComponent } from '../../components/diagrama/diagrama.component';
 import { EliminarElementoComponent } from '../../components/eliminar-elemento/eliminar-elemento.component';
 import { EstadoProcesoComponent } from '../../components/estado-proceso/estado-proceso.component';
+import { EventoFormComponent } from '../../components/evento-form/evento-form.component';
 import { GatewayFormComponent } from '../../components/gateway-form/gateway-form.component';
 import { LaneFormComponent } from '../../components/lane-form/lane-form.component';
 import { LeyendaDiagramaComponent } from '../../components/leyenda-diagrama/leyenda-diagrama.component';
+import { MensajeFormComponent } from '../../components/mensaje-form/mensaje-form.component';
+import { PanelAdvertenciasComponent } from '../../components/panel-advertencias/panel-advertencias.component';
 import { PanelElementoComponent, ReordenLanes } from '../../components/panel-elemento/panel-elemento.component';
 import { PoolFormComponent } from '../../components/pool-form/pool-form.component';
 import { SpinnerCargaComponent } from '../../components/spinner-carga/spinner-carga.component';
@@ -33,12 +37,16 @@ type TipoNodoNuevo = 'actividad' | 'gateway' | 'evento';
   imports: [
     RouterLink,
     ActividadFormComponent,
+    ArcoFormComponent,
     DiagramaComponent,
     EliminarElementoComponent,
     EstadoProcesoComponent,
+    EventoFormComponent,
     GatewayFormComponent,
     LaneFormComponent,
     LeyendaDiagramaComponent,
+    MensajeFormComponent,
+    PanelAdvertenciasComponent,
     PanelElementoComponent,
     PoolFormComponent,
     SpinnerCargaComponent
@@ -108,6 +116,14 @@ export class EditorProcesoComponent implements OnInit {
       return;
     }
     this.formulario.set({ tipo: 'lane', poolId: destino, lane: null });
+  }
+
+  nuevoArco(): void {
+    this.formulario.set({ tipo: 'arco', arco: null });
+  }
+
+  nuevoMensaje(): void {
+    this.formulario.set({ tipo: 'mensaje', mensaje: null });
   }
 
   nuevoNodo(tipo: TipoNodoNuevo, laneId?: number): void {
