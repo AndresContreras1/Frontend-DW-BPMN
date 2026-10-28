@@ -1,0 +1,10 @@
+<app-modal-confirmacion
+  [abierto]="true"
+  titulo="Eliminar elemento"
+  [mensaje]="mensaje()"
+  [advertencias]="advertencias()"
+  textoConfirmar="Eliminar"
+  [procesando]="procesando()"
+  (confirmar)="confirmar()"
+  (cancelar)="cancelar.emit()"
+/>
