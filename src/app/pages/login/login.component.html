@@ -1,0 +1,23 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-5">
+    <div class="card">
+      <div class="card-body p-4">
+        <h1 class="h3 text-primary mb-3">Iniciar sesión</h1>
+        @if (error()) {
+          <div class="alert alert-danger" role="alert" id="alertaErrorLogin">{{ error() }}</div>
+        }
+        <form [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+          <app-campo-formulario idCampo="txtEmail" etiqueta="Correo electrónico" tipo="email" [control]="form.controls.email" />
+          <app-campo-formulario idCampo="txtPassword" etiqueta="Contraseña" tipo="password" [control]="form.controls.password" />
+          <button id="btnIngresar" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">
+            {{ enviando() ? 'Ingresando...' : 'Ingresar' }}
+          </button>
+        </form>
+        <p class="small text-center mt-3 mb-0">
+          ¿Tu empresa aún no está registrada?
+          <a id="lnkIrRegistro" [routerLink]="['/registro']">Registrar empresa</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

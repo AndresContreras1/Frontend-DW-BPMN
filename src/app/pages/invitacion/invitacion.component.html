@@ -1,0 +1,20 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-5">
+    <div class="card">
+      <div class="card-body p-4">
+        <h1 class="h3 text-primary mb-1">Aceptar invitación</h1>
+        <p class="text-secondary">Completa tus datos para unirte a la empresa que te invitó.</p>
+        @if (error()) {
+          <div class="alert alert-danger" role="alert" id="alertaErrorInvitacion">{{ error() }}</div>
+        }
+        <form [formGroup]="form" (ngSubmit)="aceptar()" novalidate>
+          <app-campo-formulario idCampo="txtNombre" etiqueta="Nombre" [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+          <app-campo-formulario idCampo="txtPassword" etiqueta="Contraseña" tipo="password" ayuda="Mínimo 8 caracteres." [control]="form.controls.password" [errorServidor]="erroresServidor()['password'] ?? ''" />
+          <button id="btnAceptarInvitacion" type="submit" class="btn btn-primary w-100" [disabled]="!form.valid || enviando()">
+            {{ enviando() ? 'Creando cuenta...' : 'Crear mi cuenta' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
