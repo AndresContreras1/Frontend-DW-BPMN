@@ -1,0 +1,43 @@
+<h1 class="h3 text-primary mb-1">Permisos de estructura</h1>
+<p class="text-secondary">Define qué rol de acceso puede crear, editar o eliminar pools y lanes en los diagramas.</p>
+
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando permisos..." />
+} @else {
+  <div class="table-responsive">
+    <table class="table align-middle bg-white" id="tablaPermisos">
+      <thead>
+        <tr>
+          <th scope="col">Rol de acceso</th>
+          <th scope="col" class="text-center">Crear pool</th>
+          <th scope="col" class="text-center">Editar pool</th>
+          <th scope="col" class="text-center">Eliminar pool</th>
+          <th scope="col" class="text-center">Crear lane</th>
+          <th scope="col" class="text-center">Editar lane</th>
+          <th scope="col" class="text-center">Eliminar lane</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of filas(); track f.rolAcceso) {
+          <tr [formGroup]="f.form">
+            <th scope="row">{{ etiquetaRol(f.rolAcceso) }}</th>
+            @for (campo of ['crearPool', 'editarPool', 'eliminarPool', 'crearLane', 'editarLane', 'eliminarLane']; track campo) {
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input" [id]="'chk' + f.rolAcceso + '_' + campo" [formControlName]="campo" [attr.aria-label]="campo + ' ' + etiquetaRol(f.rolAcceso)" />
+              </td>
+            }
+            <td class="text-end">
+              <button type="button" class="btn btn-sm btn-primary" [id]="'btnGuardarPermisos' + f.rolAcceso" [disabled]="!f.form.dirty || guardando() !== null" (click)="guardar(f)">Guardar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<p class="small text-secondary">
+  Los roles de proceso (las responsabilidades que nombran las lanes) se administran en
+  <a id="lnkRolesProceso" [routerLink]="['/roles']">Roles de proceso</a>.
+</p>
