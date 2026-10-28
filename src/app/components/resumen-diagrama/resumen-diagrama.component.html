@@ -1,0 +1,5 @@
+<ul class="list-inline mb-0" id="resumenDiagrama">
+  @for (e of elementos(); track e.etiqueta) {
+    <li class="list-inline-item badge text-bg-light border fs-6 fw-normal">{{ e.etiqueta }}: <strong>{{ e.cantidad }}</strong></li>
+  }
+</ul>

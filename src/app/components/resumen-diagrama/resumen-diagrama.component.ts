@@ -1,0 +1,24 @@
+import { Component, computed, input } from '@angular/core';
+import { ProcesoDiagramaResponse } from '../../models/proceso.model';
+
+/** Resumen numérico del modelo (cuántos pools, lanes, actividades, etc. tiene el proceso). */
+@Component({
+  selector: 'app-resumen-diagrama',
+  templateUrl: './resumen-diagrama.component.html'
+})
+export class ResumenDiagramaComponent {
+  readonly diagrama = input.required<ProcesoDiagramaResponse>();
+
+  readonly elementos = computed(() => {
+    const d = this.diagrama();
+    return [
+      { etiqueta: 'Pools', cantidad: d.pools.length },
+      { etiqueta: 'Lanes', cantidad: d.lanes.length },
+      { etiqueta: 'Actividades', cantidad: d.actividades.length },
+      { etiqueta: 'Gateways', cantidad: d.gateways.length },
+      { etiqueta: 'Eventos de mensaje', cantidad: d.eventos.length },
+      { etiqueta: 'Arcos', cantidad: d.arcos.length },
+      { etiqueta: 'Mensajes', cantidad: d.mensajes.length }
+    ];
+  });
+}

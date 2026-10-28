@@ -1,0 +1,65 @@
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando proceso..." />
+} @else if (error()) {
+  <div class="alert alert-danger" role="alert" id="alertaErrorDetalle">{{ error() }}</div>
+  <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
+} @else {
+  @if (proceso(); as p) {
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+      <h1 class="h3 text-primary mb-1" id="tituloProceso">{{ p.nombre }}</h1>
+      <p class="mb-1 text-secondary">{{ p.descripcion }}</p>
+      <p class="small mb-0">Categoría: <strong>{{ p.categoria }}</strong>
+        @if (!p.activo) {
+          · <span class="badge text-bg-secondary">Eliminado</span>
+        }
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <app-estado-proceso [proceso]="p" [puedeEditar]="auth.puedeEditar()" (cambiado)="alCambiarEstado($event)" />
+      @if (auth.puedeEditar() && p.activo) {
+        <a id="btnEditarProceso" class="btn btn-outline-secondary" [routerLink]="['/procesos', p.id, 'editar']">Editar datos</a>
+      }
+    </div>
+  </div>
+
+  <section class="card mb-4" aria-labelledby="tituloModelo">
+    <div class="card-body">
+      <h2 class="h5" id="tituloModelo">Modelo del proceso</h2>
+      @if (diagrama(); as d) {
+        <app-resumen-diagrama [diagrama]="d" />
+      }
+    </div>
+  </section>
+
+  <section class="card mb-4" aria-labelledby="tituloHistorial">
+    <div class="card-body">
+      <h2 class="h5" id="tituloHistorial">Historial de cambios</h2>
+      @if (historial().length === 0) {
+        <p class="text-secondary mb-0">Aún no hay cambios registrados.</p>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-sm mb-0" id="tablaHistorial">
+            <thead>
+              <tr><th scope="col">Fecha</th><th scope="col">Autor</th><th scope="col">Cambio</th></tr>
+            </thead>
+            <tbody>
+              @for (h of historial(); track h.id) {
+                <tr>
+                  <td class="text-nowrap">{{ h.fechaCambio | date: 'yyyy-MM-dd HH:mm' }}</td>
+                  <td>{{ h.autorNombre }}</td>
+                  <td>{{ h.descripcionCambio }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (auth.esAdministrador() && p.activo) {
+    <app-compartir-proceso [procesoId]="p.id" />
+  }
+  }
+}
