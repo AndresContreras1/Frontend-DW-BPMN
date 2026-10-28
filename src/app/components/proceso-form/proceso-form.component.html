@@ -1,0 +1,11 @@
+<form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+  <app-campo-formulario idCampo="txtNombre" etiqueta="Nombre del proceso" [control]="form.controls.nombre" [errorServidor]="errores()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="txtDescripcion" etiqueta="Descripción" tipo="textarea" [control]="form.controls.descripcion" [errorServidor]="errores()['descripcion'] ?? ''" />
+  <app-campo-formulario idCampo="txtCategoria" etiqueta="Categoría" ayuda="Por ejemplo: Recursos humanos, Compras, Ventas." [control]="form.controls.categoria" [errorServidor]="errores()['categoria'] ?? ''" />
+  <div class="d-flex gap-2">
+    <button id="btnGuardarProceso" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">
+      {{ proceso() ? 'Guardar cambios' : 'Crear proceso' }}
+    </button>
+    <button id="btnCancelarProceso" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>

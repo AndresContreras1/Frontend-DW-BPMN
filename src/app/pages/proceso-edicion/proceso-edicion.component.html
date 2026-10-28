@@ -1,0 +1,27 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h3 text-primary mb-3">{{ id === null ? 'Nuevo proceso' : 'Editar proceso' }}</h1>
+
+    @if (error()) {
+      <div class="alert alert-danger" role="alert" id="alertaErrorProceso">{{ error() }}</div>
+    }
+
+    @if (cargando()) {
+      <app-spinner-carga texto="Cargando proceso..." />
+    } @else if (id === null || proceso()) {
+      @if (proceso(); as p) {
+        <div class="card card-body mb-3">
+          <h2 class="h6">Estado</h2>
+          <app-estado-proceso [proceso]="p" [puedeEditar]="true" (cambiado)="alCambiarEstado($event)" />
+        </div>
+      }
+      <div class="card">
+        <div class="card-body">
+          <app-proceso-form [proceso]="proceso()" [enviando]="enviando()" [errores]="errores()" (guardar)="guardar($event)" (cancelar)="cancelar()" />
+        </div>
+      </div>
+    } @else {
+      <a id="lnkVolverProcesos" class="btn btn-outline-primary" [routerLink]="['/procesos']">Volver a procesos</a>
+    }
+  </div>
+</div>

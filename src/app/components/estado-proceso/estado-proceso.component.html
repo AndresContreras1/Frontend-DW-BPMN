@@ -1,0 +1,24 @@
+<div class="d-flex flex-wrap align-items-center gap-2">
+  <span class="badge fs-6" id="txtEstadoProceso" [class.text-bg-success]="proceso().estado === 'PUBLICADO'" [class.text-bg-warning]="proceso().estado === 'BORRADOR'">
+    {{ proceso().estado === 'PUBLICADO' ? 'Publicado' : 'Borrador' }}
+  </span>
+  @if (proceso().estado === 'BORRADOR' && puedeEditar() && proceso().activo) {
+    <button id="btnPublicar" type="button" class="btn btn-sm btn-primary" (click)="pedirPublicar()">Publicar</button>
+  }
+</div>
+@if (advertencia()) {
+  <div class="alert alert-warning mt-2 mb-0" role="alert" id="alertaPublicacion">
+    <p class="fw-semibold mb-1">No se pudo publicar: el modelo tiene incoherencias</p>
+    <p class="mb-0">{{ advertencia() }}</p>
+  </div>
+}
+<app-modal-confirmacion
+  [abierto]="confirmando()"
+  titulo="Publicar proceso"
+  mensaje="Al publicar se valida el modelo completo (pools, lanes, flujos y mensajes). Un proceso publicado no puede volver a borrador."
+  textoConfirmar="Publicar"
+  [peligro]="false"
+  [procesando]="procesando()"
+  (confirmar)="publicar()"
+  (cancelar)="cancelar()"
+/>

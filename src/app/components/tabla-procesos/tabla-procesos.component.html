@@ -1,0 +1,42 @@
+<div class="table-responsive">
+  <table class="table table-hover align-middle bg-white" id="tablaProcesos">
+    <thead>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Categoría</th>
+        <th scope="col">Estado</th>
+        <th scope="col" class="d-none d-md-table-cell">Última modificación</th>
+        <th scope="col" class="text-end">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of procesos(); track p.id) {
+        <tr [id]="'filaProceso' + p.id">
+          <td>
+            <a [id]="'lnkProceso' + p.id" [routerLink]="['/procesos', p.id]" class="fw-semibold">{{ p.nombre }}</a>
+            @if (!p.activo) {
+              <span class="badge text-bg-secondary ms-1">Eliminado</span>
+            }
+            <div class="small text-secondary text-truncate" style="max-width: 24rem">{{ p.descripcion }}</div>
+          </td>
+          <td>{{ p.categoria }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="p.estado === 'PUBLICADO'" [class.text-bg-warning]="p.estado === 'BORRADOR'">
+              {{ p.estado === 'PUBLICADO' ? 'Publicado' : 'Borrador' }}
+            </span>
+          </td>
+          <td class="d-none d-md-table-cell small">{{ p.fechaModificacion | date: 'yyyy-MM-dd HH:mm' }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" [id]="'btnVer' + p.id" [routerLink]="['/procesos', p.id]">Ver</a>
+            @if (puedeEditar() && p.activo) {
+              <a class="btn btn-sm btn-outline-secondary ms-1" [id]="'btnEditar' + p.id" [routerLink]="['/procesos', p.id, 'editar']">Editar</a>
+            }
+            @if (puedeEliminar() && p.activo) {
+              <button type="button" class="btn btn-sm btn-outline-danger ms-1" [id]="'btnEliminar' + p.id" (click)="eliminar.emit(p)">Eliminar</button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

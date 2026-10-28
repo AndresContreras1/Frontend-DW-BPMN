@@ -1,0 +1,59 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 text-primary mb-0">Procesos</h1>
+  @if (auth.puedeEditar()) {
+    <a id="btnNuevoProceso" class="btn btn-primary" [routerLink]="['/procesos', 'nuevo']">Nuevo proceso</a>
+  }
+</div>
+
+<form class="card card-body mb-3" [formGroup]="filtros" (ngSubmit)="buscar()" aria-label="Filtros de procesos">
+  <div class="row align-items-end">
+    <div class="col-12 col-md-6 col-lg-3">
+      <app-campo-formulario idCampo="txtBuscarNombre" etiqueta="Nombre" placeholder="Buscar por nombre" [control]="filtros.controls.nombre" />
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <app-campo-formulario idCampo="txtBuscarCategoria" etiqueta="Categoría" [control]="filtros.controls.categoria" />
+    </div>
+    <div class="col-6 col-lg-2">
+      <app-campo-formulario idCampo="selFiltroEstado" etiqueta="Estado" tipo="select" [opciones]="opcionesEstado" [control]="filtros.controls.estado" />
+    </div>
+    <div class="col-6 col-lg-2">
+      <app-campo-formulario idCampo="selFiltroVisibilidad" etiqueta="Mostrar" tipo="select" [opciones]="opcionesVisibilidad" [control]="filtros.controls.visibilidad" />
+    </div>
+    <div class="col-12 col-lg-2 mb-3 d-flex gap-2">
+      <button id="btnBuscar" type="submit" class="btn btn-primary flex-fill">Buscar</button>
+      <button id="btnLimpiar" type="button" class="btn btn-outline-secondary flex-fill" (click)="limpiar()">Limpiar</button>
+    </div>
+  </div>
+</form>
+
+@if (error()) {
+  <div class="alert alert-danger" role="alert" id="alertaErrorProcesos">{{ error() }}</div>
+}
+
+@if (cargando()) {
+  <app-spinner-carga texto="Cargando procesos..." />
+} @else {
+  @if (pagina(); as p) {
+  @if (p.content.length === 0) {
+    <app-estado-vacio mensaje="No se encontraron procesos con esos filtros." />
+  } @else {
+    <app-tabla-procesos
+      [procesos]="p.content"
+      [puedeEditar]="auth.puedeEditar()"
+      [puedeEliminar]="auth.esAdministrador()"
+      (eliminar)="pedirEliminar($event)"
+    />
+    <app-paginador [pagina]="p.page" [totalPaginas]="p.totalPages" [totalElementos]="p.totalElements" (cambiarPagina)="cargar($event)" />
+  }
+  }
+}
+
+<app-modal-confirmacion
+  [abierto]="procesoAEliminar() !== null"
+  titulo="Eliminar proceso"
+  [mensaje]="'¿Eliminar el proceso &quot;' + (procesoAEliminar()?.nombre ?? '') + '&quot;? Es una baja lógica: dejará de listarse por defecto pero no se borra de la base de datos.'"
+  textoConfirmar="Eliminar"
+  [procesando]="eliminando()"
+  (confirmar)="confirmarEliminar()"
+  (cancelar)="cancelarEliminar()"
+/>
