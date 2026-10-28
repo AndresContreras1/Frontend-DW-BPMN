@@ -1,0 +1,28 @@
+<section class="card mt-3" aria-labelledby="tituloCorrelacion" id="panelCorrelacion">
+  <div class="card-body">
+    <h3 class="h6" id="tituloCorrelacion">Correlación del mensaje</h3>
+    @if (cargando()) {
+      <p class="small text-secondary mb-0">Cargando...</p>
+    } @else {
+      @if (correlacion(); as c) {
+        <p class="small mb-2" id="txtCriterioActual">Criterio actual: <strong>{{ c.criterio }}</strong></p>
+      } @else {
+        <p class="small text-warning-emphasis mb-2" id="txtSinCorrelacion">Este mensaje aún no tiene correlación. Es obligatoria para publicar.</p>
+      }
+      @if (error()) {
+        <div class="alert alert-danger small" role="alert" id="alertaErrorCorrelacion">{{ error() }}</div>
+      }
+      @if (puedeEditar()) {
+        <form (submit)="$event.preventDefault(); guardar()" novalidate>
+          <app-campo-formulario idCampo="txtCriterioCorrelacion" etiqueta="Criterio de correlación" ayuda="Por ejemplo: numeroSolicitud." [control]="criterio" />
+          <div class="d-flex gap-2">
+            <button id="btnGuardarCorrelacion" type="submit" class="btn btn-sm btn-primary" [disabled]="!criterio.valid">Guardar correlación</button>
+            @if (correlacion()) {
+              <button id="btnQuitarCorrelacion" type="button" class="btn btn-sm btn-outline-danger" (click)="quitar()">Quitar</button>
+            }
+          </div>
+        </form>
+      }
+    }
+  </div>
+</section>

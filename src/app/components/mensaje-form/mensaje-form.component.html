@@ -1,0 +1,39 @@
+<form [formGroup]="form" (ngSubmit)="guardar()" (change)="actualizarDependencias()" novalidate>
+  <h3 class="h6">{{ mensaje() ? 'Editar mensaje' : 'Nuevo mensaje entre pools' }}</h3>
+  <p class="small text-secondary">El sistema solo modela el mensaje y sus notificaciones; no envía nada.</p>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorMensaje">{{ error() }}</div>
+  }
+  @if (opcionesPools().length < 2) {
+    <div class="alert alert-warning" role="alert">Un mensaje conecta dos pools distintos; crea otro pool primero.</div>
+  }
+  <app-campo-formulario idCampo="txtNombreMensaje" etiqueta="Nombre del mensaje" ayuda="Debe coincidir con el nombre de su evento Message Throw." [control]="form.controls.nombre" [errorServidor]="erroresServidor()['nombre'] ?? ''" />
+  <app-campo-formulario idCampo="txtContenidoMensaje" etiqueta="Contenido" tipo="textarea" [control]="form.controls.contenido" [errorServidor]="erroresServidor()['contenido'] ?? ''" />
+  <div class="row">
+    <div class="col-6">
+      <app-campo-formulario idCampo="selPoolOrigen" etiqueta="Pool de origen" tipo="select" [opciones]="opcionesPools()" [control]="form.controls.poolOrigenId" />
+    </div>
+    <div class="col-6">
+      <app-campo-formulario idCampo="selPoolDestino" etiqueta="Pool de destino" tipo="select" [opciones]="opcionesPools()" [control]="form.controls.poolDestinoId" />
+    </div>
+  </div>
+  <app-campo-formulario idCampo="selEventoThrow" etiqueta="Message Throw (emisor)" tipo="select" ayuda="Evento de envío del pool de origen." [opciones]="opcionesThrow()" [control]="form.controls.eventoThrowId" [errorServidor]="erroresServidor()['eventoThrowId'] ?? ''" />
+  <app-campo-formulario idCampo="selEventoCatch" etiqueta="Message Catch (receptor)" tipo="select" ayuda="Evento de recepción del pool de destino; vacío si el destino es externo." [opciones]="opcionesCatch()" [control]="form.controls.eventoCatchId" [errorServidor]="erroresServidor()['eventoCatchId'] ?? ''" />
+  <app-campo-formulario idCampo="txtClaveMensaje" etiqueta="Clave de correlación" [control]="form.controls.claveCorrelacion" [errorServidor]="erroresServidor()['claveCorrelacion'] ?? ''" />
+
+  <h4 class="h6 mt-3">Notificación a un sistema externo (opcional)</h4>
+  <app-campo-formulario idCampo="selTipoDestino" etiqueta="Tipo de destino" tipo="select" [opciones]="tiposDestino" [control]="form.controls.tipoDestinoExterno" />
+  @if (conDestinoExterno()) {
+    <app-campo-formulario idCampo="txtDestinoExterno" etiqueta="Destino documentado" ayuda="Dirección de correo, URL del servicio o nombre de la cola. El pool destino debe ser un sistema externo de caja negra." [control]="form.controls.destinoExterno" [errorServidor]="erroresServidor()['destinoExterno'] ?? ''" />
+    <app-campo-formulario idCampo="selPoliticaFallo" etiqueta="Si falla la notificación" tipo="select" [opciones]="politicasFallo" [control]="form.controls.politicaFalloNotificacion" />
+    @if (derivaAError()) {
+      <app-campo-formulario idCampo="selActividadError" etiqueta="Actividad de error" tipo="select" [opciones]="opcionesActividadError()" [control]="form.controls.actividadErrorId" [errorServidor]="erroresServidor()['actividadErrorId'] ?? ''" />
+    }
+  }
+  <app-campo-formulario idCampo="selPoliticaSinCaso" etiqueta="Si el mensaje llega sin un caso abierto" tipo="select" [opciones]="politicasSinCaso" [control]="form.controls.politicaSinCaso" />
+
+  <div class="d-flex gap-2">
+    <button id="btnGuardarMensaje" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ mensaje() ? 'Guardar cambios' : 'Crear mensaje' }}</button>
+    <button id="btnCancelarMensaje" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>
