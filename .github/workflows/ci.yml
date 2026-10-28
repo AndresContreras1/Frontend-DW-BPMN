@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  construir-y-probar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar
+        run: npx ng build
+
+      - name: Pruebas con cobertura
+        run: npx ng test --watch=false --browsers=ChromeHeadless --code-coverage
+
+      - name: Análisis de Sonar
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+
+      - name: Construir imagen Docker
+        if: hashFiles('Dockerfile') != ''
+        run: docker build -t frontend-dw-bpmn .

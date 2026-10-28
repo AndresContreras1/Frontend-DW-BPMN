@@ -1,0 +1,38 @@
+@use 'styles/variables' as v;
+@use 'bootstrap/scss/bootstrap' with (
+  $primary: v.$primary,
+  $success: v.$success,
+  $info: v.$info,
+  $secondary: v.$secondary,
+  $body-color: v.$body-color,
+  $body-bg: v.$body-bg,
+  $link-color: v.$link-color,
+  $link-hover-color: v.$link-hover-color,
+  $border-radius: v.$border-radius,
+  $font-family-sans-serif: v.$font-family-sans-serif
+);
+
+// CSS propio, después de Bootstrap.
+:root {
+  --aqua-100: #{v.$aqua-100};
+  --aqua-200: #{v.$aqua-200};
+  --aqua-300: #{v.$aqua-300};
+  --aqua-500: #{v.$aqua-500};
+  --aqua-600: #{v.$aqua-600};
+  --aqua-700: #{v.$aqua-700};
+  --aqua-800: #{v.$aqua-800};
+}
+
+body {
+  min-height: 100vh;
+}
+
+.card {
+  border-color: v.$aqua-200;
+  box-shadow: 0 2px 8px rgb(15 132 114 / 8%);
+}
+
+.btn-primary:hover {
+  background-color: v.$aqua-700;
+  border-color: v.$aqua-700;
+}

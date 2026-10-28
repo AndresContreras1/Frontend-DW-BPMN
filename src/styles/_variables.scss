@@ -1,0 +1,26 @@
+// Paleta aguamarina del sitio (también la usa el diagrama SVG).
+$aqua-50: #effaf8;
+$aqua-100: #d9f4ef;
+$aqua-200: #b3e9df;
+$aqua-300: #7fdacb;
+$aqua-400: #3fc6b0;
+$aqua-500: #1abc9c;
+$aqua-600: #0f8472;
+$aqua-700: #0b6a5b;
+$aqua-800: #095246;
+$aqua-900: #063a32;
+
+$ink: #17312d;
+$ink-suave: #4a625e;
+
+// Sobrescrituras de Bootstrap (se pasan con "with" antes de cargarlo).
+$primary: $aqua-600;
+$success: #1f9d6b;
+$info: #1ba3b8;
+$secondary: #5f7b77;
+$body-color: $ink;
+$body-bg: $aqua-50;
+$link-color: $aqua-600;
+$link-hover-color: $aqua-700;
+$border-radius: 0.6rem;
+$font-family-sans-serif: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
