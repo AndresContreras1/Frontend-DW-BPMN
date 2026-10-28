@@ -1,0 +1,23 @@
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h3 class="h6">{{ arco() ? 'Editar arco' : 'Nuevo arco' }}</h3>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert" id="alertaErrorArco">{{ error() }}</div>
+  }
+  @if (nodos().length < 2) {
+    <div class="alert alert-warning" role="alert">Un arco necesita al menos dos nodos (actividades, gateways o eventos).</div>
+  }
+  <div (change)="alCambiarOrigen()">
+    <app-campo-formulario idCampo="selOrigenArco" etiqueta="Nodo de origen" tipo="select" [opciones]="opcionesOrigen()" [control]="form.controls.origenId" [errorServidor]="erroresServidor()['origenId'] ?? ''" />
+  </div>
+  <app-campo-formulario idCampo="selDestinoArco" etiqueta="Nodo de destino" tipo="select" ayuda="Solo se ofrecen nodos del mismo pool que el origen." [opciones]="opcionesDestino()" [control]="form.controls.destinoId" [errorServidor]="erroresServidor()['destinoId'] ?? ''" />
+  <app-campo-formulario idCampo="txtEtiquetaArco" etiqueta="Etiqueta" [control]="form.controls.etiqueta" />
+  @if (pideCondicion()) {
+    <app-campo-formulario idCampo="txtCondicionArco" etiqueta="Condición" ayuda="Obligatoria para publicar: los arcos que salen de un gateway exclusivo o inclusivo deben tener condición." [control]="form.controls.condicion" [errorServidor]="erroresServidor()['condicion'] ?? ''" />
+  } @else {
+    <p class="small text-secondary" id="avisoSinCondicion">La condición solo aplica a arcos que salen de un gateway exclusivo o inclusivo.</p>
+  }
+  <div class="d-flex gap-2">
+    <button id="btnGuardarArco" type="submit" class="btn btn-primary" [disabled]="!form.valid || enviando()">{{ arco() ? 'Guardar cambios' : 'Crear arco' }}</button>
+    <button id="btnCancelarArco" type="button" class="btn btn-outline-secondary" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>
