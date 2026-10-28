@@ -1,0 +1,16 @@
+@if (descripcion(); as d) {
+  <section class="card" aria-labelledby="tituloDetalleElemento" id="panelDetalleElemento">
+    <div class="card-body">
+      <p class="small text-uppercase text-secondary mb-0">{{ d.tipo }}</p>
+      <h3 class="h5 text-primary" id="tituloDetalleElemento">{{ d.titulo }}</h3>
+      <dl class="row small mb-0">
+        @for (f of d.filas; track f.etiqueta) {
+          <dt class="col-5 fw-semibold">{{ f.etiqueta }}</dt>
+          <dd class="col-7">{{ f.valor }}</dd>
+        }
+      </dl>
+    </div>
+  </section>
+} @else {
+  <p class="small text-secondary" id="txtSinSeleccion">Selecciona un elemento del diagrama para ver su detalle.</p>
+}

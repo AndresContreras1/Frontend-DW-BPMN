@@ -1,0 +1,9 @@
+<app-leyenda-diagrama />
+<div class="row g-3">
+  <div class="col-12 col-xl-9">
+    <app-diagrama [datos]="datos()" [seleccion]="seleccion()" (seleccionar)="seleccion.set($event)" />
+  </div>
+  <div class="col-12 col-xl-3">
+    <app-detalle-elemento [datos]="datos()" [seleccion]="seleccion()" />
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ResumenDiagramaComponent } from '../../components/resumen-diagrama/resumen-diagrama.component';
+import { VisorProcesoComponent } from '../../components/visor-proceso/visor-proceso.component';
 import { SpinnerCargaComponent } from '../../components/spinner-carga/spinner-carga.component';
 import { ProcesoCompartidoDetalleResponse } from '../../models/proceso-compartido.model';
 import { ProcesoCompartidoService } from '../../service/proceso-compartido.service';
@@ -9,7 +10,7 @@ import { mensajeDeError } from '../../utils/problema';
 /** HU-23: detalle en SOLO LECTURA de un proceso que otra empresa compartió. */
 @Component({
   selector: 'app-compartido-detalle',
-  imports: [RouterLink, ResumenDiagramaComponent, SpinnerCargaComponent],
+  imports: [RouterLink, ResumenDiagramaComponent, SpinnerCargaComponent, VisorProcesoComponent],
   templateUrl: './compartido-detalle.component.html'
 })
 export class CompartidoDetalleComponent implements OnInit {

@@ -28,6 +28,7 @@
       <h2 class="h5" id="tituloModelo">Modelo del proceso</h2>
       @if (diagrama(); as d) {
         <app-resumen-diagrama [diagrama]="d" />
+        <div class="mt-3"><app-visor-proceso [datos]="d" /></div>
       }
     </div>
   </section>

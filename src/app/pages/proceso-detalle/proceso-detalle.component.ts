@@ -5,6 +5,7 @@ import { switchMap } from 'rxjs';
 import { CompartirProcesoComponent } from '../../components/compartir-proceso/compartir-proceso.component';
 import { EstadoProcesoComponent } from '../../components/estado-proceso/estado-proceso.component';
 import { ResumenDiagramaComponent } from '../../components/resumen-diagrama/resumen-diagrama.component';
+import { VisorProcesoComponent } from '../../components/visor-proceso/visor-proceso.component';
 import { SpinnerCargaComponent } from '../../components/spinner-carga/spinner-carga.component';
 import { HistorialCambioResponse, ProcesoDiagramaResponse, ProcesoResponse } from '../../models/proceso.model';
 import { AuthService } from '../../service/auth.service';
@@ -20,7 +21,8 @@ import { mensajeDeError } from '../../utils/problema';
     CompartirProcesoComponent,
     EstadoProcesoComponent,
     ResumenDiagramaComponent,
-    SpinnerCargaComponent
+    SpinnerCargaComponent,
+    VisorProcesoComponent
   ],
   templateUrl: './proceso-detalle.component.html'
 })
